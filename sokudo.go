@@ -1,5 +1,7 @@
 package sokudo
 
+import "fmt"
+
 const (
 	version = "1.0.0"
 )
@@ -21,6 +23,11 @@ func (s *Sokudo) New(rootPath string) error {
 		return err
 	}
 
+	err = s.checkDotEnv(rootPath)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -32,6 +39,15 @@ func (s *Sokudo) Init(p initPaths) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (s *Sokudo) checkDotEnv(path string) error {
+	err := s.CreateFileIfNotExists(fmt.Sprintf("%s/.env", path))
+	if err != nil {
+		return err
 	}
 
 	return nil
