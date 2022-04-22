@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 )
 
@@ -22,6 +23,7 @@ type Sokudo struct {
 	ErrorLog *log.Logger
 	InfoLog  *log.Logger
 	RootPath string
+	Routes   *chi.Mux
 	config
 }
 
@@ -59,6 +61,7 @@ func (s *Sokudo) New(rootPath string) error {
 	s.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
 	s.Version = version
 	s.RootPath = rootPath
+	s.Routes = s.routes().(*chi.Mux)
 
 	s.config = config{
 		port:     os.Getenv("PORT"),
