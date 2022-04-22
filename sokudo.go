@@ -2,6 +2,9 @@ package sokudo
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -11,9 +14,12 @@ const (
 )
 
 type Sokudo struct {
-	AppName string
-	Debug   bool
-	Version string
+	AppName  string
+	Debug    bool
+	Version  string
+	ErrorLog *log.Logger
+	InfoLog  *log.Logger
+	RootPath string
 }
 
 func (s *Sokudo) New(rootPath string) error {
@@ -38,6 +44,13 @@ func (s *Sokudo) New(rootPath string) error {
 		return err
 	}
 
+	// create loggers
+	infoLog, errorLog := s.startLoggers()
+	s.InfoLog = infoLog
+	s.ErrorLog = errorLog
+	s.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
+	s.Version = version
+
 	return nil
 }
 
@@ -61,4 +74,13 @@ func (s *Sokudo) checkDotEnv(path string) error {
 	}
 
 	return nil
+}
+
+func (s *Sokudo) startLoggers() (*log.Logger, *log.Logger) {
+	var infoLog, errorLog *log.Logger
+
+	infoLog = log.New(os.Stdout, "[INFO]\t", log.Ldate|log.Ltime)
+	errorLog = log.New(os.Stdout, "[ERROR]\t", log.Ldate|log.Ltime|log.Lshortfile)
+
+	return infoLog, errorLog
 }
