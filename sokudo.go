@@ -3,8 +3,10 @@ package sokudo
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -77,6 +79,23 @@ func (s *Sokudo) Init(p initPaths) error {
 	}
 
 	return nil
+}
+
+// ListenAndServe starts the web server
+func (s *Sokudo) ListenAndServe() {
+	srv := http.Server{
+		Addr:         fmt.Sprintf(":%s", os.Getenv("PORT")),
+		ErrorLog:     s.ErrorLog,
+		Handler:      s.routes(),
+		IdleTimeout:  30 * time.Second,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 600 * time.Second,
+	}
+
+	s.InfoLog.Printf("Listening on port %s", os.Getenv("PORT"))
+	if err := srv.ListenAndServe(); err != nil {
+		s.ErrorLog.Fatal(err)
+	}
 }
 
 func (s *Sokudo) checkDotEnv(path string) error {
