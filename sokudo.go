@@ -20,6 +20,12 @@ type Sokudo struct {
 	ErrorLog *log.Logger
 	InfoLog  *log.Logger
 	RootPath string
+	config
+}
+
+type config struct {
+	port     string
+	rendeder string
 }
 
 func (s *Sokudo) New(rootPath string) error {
@@ -50,6 +56,12 @@ func (s *Sokudo) New(rootPath string) error {
 	s.ErrorLog = errorLog
 	s.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
 	s.Version = version
+	s.RootPath = rootPath
+
+	s.config = config{
+		port:     os.Getenv("PORT"),
+		rendeder: os.Getenv("RENDERER"),
+	}
 
 	return nil
 }
