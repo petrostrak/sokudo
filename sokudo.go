@@ -1,6 +1,10 @@
 package sokudo
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/joho/godotenv"
+)
 
 const (
 	version = "1.0.0"
@@ -24,6 +28,12 @@ func (s *Sokudo) New(rootPath string) error {
 	}
 
 	err = s.checkDotEnv(rootPath)
+	if err != nil {
+		return err
+	}
+
+	// read .env
+	err = godotenv.Load(rootPath + "/.env")
 	if err != nil {
 		return err
 	}
