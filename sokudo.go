@@ -70,7 +70,7 @@ func (s *Sokudo) New(rootPath string) error {
 		rendeder: os.Getenv("RENDERER"),
 	}
 
-	s.Render = s.createRenderer(s)
+	s.createRenderer()
 
 	return nil
 }
@@ -93,7 +93,7 @@ func (s *Sokudo) ListenAndServe() {
 	srv := http.Server{
 		Addr:         fmt.Sprintf(":%s", os.Getenv("PORT")),
 		ErrorLog:     s.ErrorLog,
-		Handler:      s.routes(),
+		Handler:      s.Routes,
 		IdleTimeout:  30 * time.Second,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 600 * time.Second,
@@ -123,12 +123,12 @@ func (s *Sokudo) startLoggers() (*log.Logger, *log.Logger) {
 	return infoLog, errorLog
 }
 
-func (s *Sokudo) createRenderer(skd *Sokudo) *render.Render {
+func (s *Sokudo) createRenderer() {
 	myRender := render.Render{
-		Renderer: skd.config.rendeder,
-		RootPath: skd.RootPath,
-		Port:     skd.config.port,
+		Renderer: s.config.rendeder,
+		RootPath: s.RootPath,
+		Port:     s.config.port,
 	}
 
-	return &myRender
+	s.Render = &myRender
 }
