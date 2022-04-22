@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
+	"github.com/petrostrak/sokudo/render"
 )
 
 const (
@@ -24,6 +25,7 @@ type Sokudo struct {
 	InfoLog  *log.Logger
 	RootPath string
 	Routes   *chi.Mux
+	Render   *render.Render
 	config
 }
 
@@ -67,6 +69,8 @@ func (s *Sokudo) New(rootPath string) error {
 		port:     os.Getenv("PORT"),
 		rendeder: os.Getenv("RENDERER"),
 	}
+
+	s.Render = s.createRenderer(s)
 
 	return nil
 }
@@ -117,4 +121,14 @@ func (s *Sokudo) startLoggers() (*log.Logger, *log.Logger) {
 	errorLog = log.New(os.Stdout, "[ERROR]\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	return infoLog, errorLog
+}
+
+func (s *Sokudo) createRenderer(skd *Sokudo) *render.Render {
+	myRender := render.Render{
+		Renderer: skd.config.rendeder,
+		RootPath: skd.RootPath,
+		Port:     skd.config.port,
+	}
+
+	return &myRender
 }
