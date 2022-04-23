@@ -8,7 +8,7 @@ type initPaths struct {
 type cookieConfig struct {
 	name     string
 	lifetime string
-	persists string
+	persist  string
 	secure   string
 	domain   string
 }

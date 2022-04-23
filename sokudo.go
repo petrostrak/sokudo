@@ -13,6 +13,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 	"github.com/petrostrak/sokudo/render"
+	"github.com/petrostrak/sokudo/session"
 )
 
 const (
@@ -77,13 +78,20 @@ func (s *Sokudo) New(rootPath string) error {
 		cookie: cookieConfig{
 			name:     os.Getenv("COOKIE_NAME"),
 			lifetime: os.Getenv("COOKIE_LIFETIME"),
-			persists: os.Getenv("COOKIE_PERSISTS"),
+			persist:  os.Getenv("COOKIE_PERSISTS"),
 			secure:   os.Getenv("COOKIE_SECURE"),
 		},
 		sessionType: os.Getenv("SESSION_TYPE"),
 	}
 
 	// create session
+	sess := session.Session{
+		CookieLifetime: s.cookie.lifetime,
+		CookiePersist:  s.config.cookie.persist,
+		CookieName:     s.config.cookie.name,
+		SessionType:    s.config.sessionType,
+	}
+	s.Session = sess.InitSession()
 
 	var views = jet.NewSet(
 		jet.NewOSFileSystemLoader(fmt.Sprintf("%s/views", rootPath)),
