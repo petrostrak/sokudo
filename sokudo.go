@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/CloudyKit/jet/v6"
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 	"github.com/petrostrak/sokudo/render"
@@ -27,13 +28,16 @@ type Sokudo struct {
 	RootPath string
 	Routes   *chi.Mux
 	Render   *render.Render
+	Session  *scs.SessionManager
 	JetViews *jet.Set
 	config
 }
 
 type config struct {
-	port     string
-	rendeder string
+	port        string
+	rendeder    string
+	cookie      cookieConfig
+	sessionType string
 }
 
 func (s *Sokudo) New(rootPath string) error {
@@ -70,7 +74,16 @@ func (s *Sokudo) New(rootPath string) error {
 	s.config = config{
 		port:     os.Getenv("PORT"),
 		rendeder: os.Getenv("RENDERER"),
+		cookie: cookieConfig{
+			name:     os.Getenv("COOKIE_NAME"),
+			lifetime: os.Getenv("COOKIE_LIFETIME"),
+			persists: os.Getenv("COOKIE_PERSISTS"),
+			secure:   os.Getenv("COOKIE_SECURE"),
+		},
+		sessionType: os.Getenv("SESSION_TYPE"),
 	}
+
+	// create session
 
 	var views = jet.NewSet(
 		jet.NewOSFileSystemLoader(fmt.Sprintf("%s/views", rootPath)),
