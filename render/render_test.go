@@ -22,9 +22,19 @@ func TestRender_Page(t *testing.T) {
 		t.Error("error rendering page", err)
 	}
 
+	err = testRenderer.Page(w, r, "no-file", nil, nil)
+	if err == nil {
+		t.Error("error rendering non-existent template", err)
+	}
+
 	testRenderer.Renderer = "jet"
 	err = testRenderer.Page(w, r, "home", nil, nil)
 	if err != nil {
 		t.Error("error rendering page", err)
+	}
+
+	err = testRenderer.Page(w, r, "no-file", nil, nil)
+	if err == nil {
+		t.Error("error rendering non-existent jet template", err)
 	}
 }
