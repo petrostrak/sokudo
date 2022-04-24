@@ -30,6 +30,7 @@ type Sokudo struct {
 	Routes   *chi.Mux
 	Render   *render.Render
 	Session  *scs.SessionManager
+	DB       Database
 	JetViews *jet.Set
 	config
 }
@@ -39,6 +40,7 @@ type config struct {
 	rendeder    string
 	cookie      cookieConfig
 	sessionType string
+	database    databaseConfig
 }
 
 func (s *Sokudo) New(rootPath string) error {
@@ -164,4 +166,25 @@ func (s *Sokudo) createRenderer() {
 	}
 
 	s.Render = &myRender
+}
+
+func (s *Sokudo) BuildDSN() string {
+	var dsn string
+
+	switch os.Getenv("DATABASE_TYPE") {
+	case "postgres", "postgresql":
+		dsn = fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=%s timezone=UTC connect_timeout=5",
+			os.Getenv("DATABASE_HOST"),
+			os.Getenv("DATABASE_PORT"),
+			os.Getenv("DATABASE_USER"),
+			os.Getenv("DATABASE_NAME"),
+			os.Getenv("DATABASE_SSL_MODE"))
+
+		if os.Getenv("DATABASE_PASS") != "" {
+			dsn = fmt.Sprintf("%s password=%s", dsn, os.Getenv("DATABASE_PASS"))
+		}
+	default:
+	}
+
+	return dsn
 }
