@@ -67,6 +67,21 @@ func (s *Sokudo) New(rootPath string) error {
 
 	// create loggers
 	infoLog, errorLog := s.startLoggers()
+
+	// connect to database
+	if os.Getenv("DATABASE_TYPE") != "" {
+		db, err := s.OpenDB(os.Getenv("DATABASE_TYPE"), s.BuildDSN())
+		if err != nil {
+			errorLog.Println(err)
+			os.Exit(1)
+		}
+
+		s.DB = Database{
+			DataType: os.Getenv("DATABASE_TYPE"),
+			Pool:     db,
+		}
+	}
+
 	s.InfoLog = infoLog
 	s.ErrorLog = errorLog
 	s.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
