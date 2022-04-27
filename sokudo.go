@@ -100,6 +100,10 @@ func (s *Sokudo) New(rootPath string) error {
 			domain:   os.Getenv("COOKIE_DOMAIN"),
 		},
 		sessionType: os.Getenv("SESSION_TYPE"),
+		database: databaseConfig{
+			database: os.Getenv("DATABASE_TYPE"),
+			dsn:      s.BuildDSN(),
+		},
 	}
 
 	// create session
@@ -147,6 +151,8 @@ func (s *Sokudo) ListenAndServe() {
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 600 * time.Second,
 	}
+
+	defer s.DB.Pool.Close()
 
 	s.InfoLog.Printf("Listening on port %s", os.Getenv("PORT"))
 	if err := srv.ListenAndServe(); err != nil {
