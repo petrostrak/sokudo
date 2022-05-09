@@ -43,3 +43,10 @@ func validateInput() (string, string, string, error) {
 
 	return arg1, arg2, arg3, nil
 }
+
+func showHelp() {
+	color.Yellow(`Available commmands:
+	help		- show the help commands
+	version		- print application version
+	`)
+}
