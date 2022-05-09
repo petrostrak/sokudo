@@ -36,7 +36,7 @@ func validateInput() (string, string, string, error) {
 			arg3 = os.Args[3]
 		}
 	} else {
-		color.Red("error: command required")
+		color.Red("Error: command required")
 		showHelp()
 		return "", "", "", errors.New("command required")
 	}
@@ -49,4 +49,22 @@ func showHelp() {
 	help		- show the help commands
 	version		- print application version
 	`)
+}
+
+func exitGracefully(err error, msg ...string) {
+	message := ""
+	if len(msg) > 0 {
+		message = msg[0]
+	}
+
+	if err != nil {
+		color.Red("Error: %v\n", err)
+	}
+
+	if len(message) > 0 {
+		color.Yellow(message)
+	} else {
+		color.Green("Finished!")
+	}
+
 }
