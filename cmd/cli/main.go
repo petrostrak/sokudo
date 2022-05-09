@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"log"
 	"os"
 
 	"github.com/fatih/color"
@@ -20,6 +21,15 @@ func main() {
 	arg1, arg2, arg3, err := validateInput()
 	if err != nil {
 		exitGracefully(err)
+	}
+
+	switch arg1 {
+	case "help":
+		showHelp()
+	case "version":
+		color.Yellow("Application version:" + version)
+	default:
+		log.Println(arg2, arg3)
 	}
 }
 
