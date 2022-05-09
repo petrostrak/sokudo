@@ -67,4 +67,5 @@ func exitGracefully(err error, msg ...string) {
 		color.Green("Finished!")
 	}
 
+	os.Exit(0)
 }
