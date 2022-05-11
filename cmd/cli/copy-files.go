@@ -1,6 +1,9 @@
 package main
 
-import "embed"
+import (
+	"embed"
+	"io/ioutil"
+)
 
 //go:embed templates
 var (
@@ -18,6 +21,15 @@ func copyFileFromTemplate(templatePath, targetFile string) error {
 	err = copyDataToFile(data, targetFile)
 	if err != nil {
 		exitGracefully(err)
+	}
+
+	return nil
+}
+
+func copyDataToFile(data []byte, to string) error {
+	err := ioutil.WriteFile(to, data, 0644)
+	if err != nil {
+		return err
 	}
 
 	return nil
