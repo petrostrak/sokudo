@@ -4,6 +4,11 @@ import (
 	"log"
 
 	"github.com/golang-migrate/migrate/v4"
+
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 func (s *Sokudo) MigrateUp(dsn string) error {
@@ -13,7 +18,7 @@ func (s *Sokudo) MigrateUp(dsn string) error {
 	}
 	defer m.Close()
 
-	if err = m.Up(); err != nil {
+	if err := m.Up(); err != nil {
 		log.Println("error runing migration up:", err)
 		return err
 	}
@@ -28,7 +33,7 @@ func (s *Sokudo) MigrateDownAll(dsn string) error {
 	}
 	defer m.Close()
 
-	if err = m.Down(); err != nil {
+	if err := m.Down(); err != nil {
 		log.Println("error runing migration down:", err)
 		return err
 	}
@@ -43,7 +48,7 @@ func (s *Sokudo) Steps(n int, dsn string) error {
 	}
 	defer m.Close()
 
-	if err = m.Steps(n); err != nil {
+	if err := m.Steps(n); err != nil {
 		return err
 	}
 
@@ -57,7 +62,7 @@ func (s *Sokudo) MigrateForce(dsn string) error {
 	}
 	defer m.Close()
 
-	if err = m.Force(-1); err != nil {
+	if err := m.Force(-1); err != nil {
 		return err
 	}
 
