@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 )
 
-//go:embed templates
 var (
+	//go:embed templates
 	templateFS embed.FS
 )
 
