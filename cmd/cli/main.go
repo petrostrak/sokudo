@@ -23,6 +23,8 @@ func main() {
 		exitGracefully(err)
 	}
 
+	setup()
+
 	switch arg1 {
 	case "help":
 		showHelp()
