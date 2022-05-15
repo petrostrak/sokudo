@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/fatih/color"
 	"github.com/joho/godotenv"
 )
 
@@ -53,4 +54,11 @@ func getDSN() string {
 
 	return "mysql://" + skd.BuildDSN()
 
+}
+
+func showHelp() {
+	color.Yellow(`Available commmands:
+	help		- show the help commands
+	version		- print application version
+	`)
 }
