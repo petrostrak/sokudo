@@ -30,6 +30,7 @@ func main() {
 		showHelp()
 	case "version":
 		color.Yellow("Application version:" + version)
+	case "migrate":
 	case "make":
 		if arg2 == "" {
 			exitGracefully(errors.New("make requires a subcommand: (migration|model|handler)"))
