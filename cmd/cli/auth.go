@@ -17,7 +17,7 @@ func doAuth() error {
 		exitGracefully(err)
 	}
 
-	err = copyDataToFile([]byte("drop table if exists users cascade"), downFile)
+	err = copyDataToFile([]byte("drop table if exists users cascade; drop table if exists tokens cascade; drop table if exists remember_tokens;"), downFile)
 	if err != nil {
 		exitGracefully(err)
 	}
