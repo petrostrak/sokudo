@@ -9,8 +9,8 @@ func doAuth() error {
 	// migrations
 	dbType := skd.DB.DataType
 	fileName := fmt.Sprintf("%d_create_auth_tables", time.Now().UnixMicro())
-	upFile := skd.RootPath + "/migrations" + fileName + ".up.sql"
-	downFile := skd.RootPath + "/migrations" + fileName + ".down.sql"
+	upFile := skd.RootPath + "/migrations/" + fileName + ".up.sql"
+	downFile := skd.RootPath + "/migrations/" + fileName + ".down.sql"
 
 	err := copyFileFromTemplate("templates/migrations/auth_tables."+dbType+".sql", upFile)
 	if err != nil {
