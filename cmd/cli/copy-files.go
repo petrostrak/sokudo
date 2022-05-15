@@ -2,7 +2,9 @@ package main
 
 import (
 	"embed"
+	"errors"
 	"io/ioutil"
+	"os"
 )
 
 var (
@@ -11,7 +13,9 @@ var (
 )
 
 func copyFileFromTemplate(templatePath, targetFile string) error {
-	// check to ensure file does not already exist
+	if fileExists(targetFile) {
+		return errors.New(targetFile + " already exists!")
+	}
 
 	data, err := templateFS.ReadFile(templatePath)
 	if err != nil {
@@ -33,4 +37,12 @@ func copyDataToFile(data []byte, to string) error {
 	}
 
 	return nil
+}
+
+func fileExists(fileToCheck string) bool {
+	if _, err := os.Stat(fileToCheck); os.IsNotExist(err) {
+		return false
+	}
+
+	return true
 }
