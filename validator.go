@@ -3,6 +3,7 @@ package sokudo
 import (
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/asaskevich/govalidator"
@@ -55,5 +56,12 @@ func (v *Validation) Check(ok bool, key, message string) {
 func (v *Validation) IsEmail(field, value string) {
 	if !govalidator.IsEmail(value) {
 		v.AddError(field, "Invalid email address")
+	}
+}
+
+func (v *Validation) IsInt(field, value string) {
+	_, err := strconv.Atoi(value)
+	if err != nil {
+		v.AddError(field, "This field must be an integer")
 	}
 }
