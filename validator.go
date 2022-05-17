@@ -65,3 +65,10 @@ func (v *Validation) IsInt(field, value string) {
 		v.AddError(field, "This field must be an integer")
 	}
 }
+
+func (v *Validation) IsFloat(field, value string) {
+	_, err := strconv.ParseFloat(value, 64)
+	if err != nil {
+		v.AddError(field, "This field must be a floating point number")
+	}
+}
