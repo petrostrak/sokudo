@@ -1,6 +1,9 @@
 package sokudo
 
-import "net/url"
+import (
+	"net/http"
+	"net/url"
+)
 
 type Validation struct {
 	Data   url.Values
@@ -22,4 +25,10 @@ func (v *Validation) AddError(key, message string) {
 	if _, exists := v.Errors[key]; !exists {
 		v.Errors[key] = message
 	}
+}
+
+func (v *Validation) Has(field string, r *http.Request) bool {
+	x := r.Form.Get(field)
+
+	return x == ""
 }
