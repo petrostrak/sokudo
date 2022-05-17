@@ -80,3 +80,9 @@ func (v *Validation) IsDateISO(field, value string) {
 		v.AddError(field, "This field must be a date in the form of YYYY-MM-DD")
 	}
 }
+
+func (v *Validation) NoSpaces(field, value string) {
+	if govalidator.HasWhitespace(value) {
+		v.AddError(field, "Spaces are not permitted")
+	}
+}
