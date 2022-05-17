@@ -3,6 +3,7 @@ package sokudo
 import (
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 type Validation struct {
@@ -31,4 +32,14 @@ func (v *Validation) Has(field string, r *http.Request) bool {
 	x := r.Form.Get(field)
 
 	return x == ""
+}
+
+func (v *Validation) Required(r *http.Request, fields ...string) {
+	for _, field := range fields {
+		value := r.Form.Get(field)
+
+		if strings.TrimSpace(value) == "" {
+			v.AddError(field, "This field cannot be blank")
+		}
+	}
 }
