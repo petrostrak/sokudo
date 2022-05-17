@@ -43,3 +43,9 @@ func (v *Validation) Required(r *http.Request, fields ...string) {
 		}
 	}
 }
+
+func (v *Validation) Check(ok bool, key, message string) {
+	if !ok {
+		v.AddError(key, message)
+	}
+}
