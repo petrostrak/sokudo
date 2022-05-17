@@ -113,6 +113,7 @@ func (s *Sokudo) New(rootPath string) error {
 		CookieName:     s.config.cookie.name,
 		SessionType:    s.config.sessionType,
 		CookieDomain:   s.config.cookie.domain,
+		DBPool:         s.DB.Pool,
 	}
 	s.Session = sess.InitSession()
 
