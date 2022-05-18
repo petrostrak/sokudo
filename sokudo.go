@@ -42,8 +42,11 @@ type config struct {
 	cookie      cookieConfig
 	sessionType string
 	database    databaseConfig
+	redis       redisConfig
 }
 
+// New reads the .env file, creates our application config, populates the Sokudo type with settings
+// based of .env values, and creates necessary folders and files if they don't exist
 func (s *Sokudo) New(rootPath string) error {
 	pathConfig := initPaths{
 		rootPath:    rootPath,
@@ -104,6 +107,11 @@ func (s *Sokudo) New(rootPath string) error {
 		database: databaseConfig{
 			database: os.Getenv("DATABASE_TYPE"),
 			dsn:      s.BuildDSN(),
+		},
+		redis: redisConfig{
+			host:     os.Getenv("REDIS_HOST"),
+			password: os.Getenv("REDIS_PASSWORD"),
+			prefix:   os.Getenv("REDIS_PREFIX"),
 		},
 	}
 
