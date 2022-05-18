@@ -5,6 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"io"
 	"os"
 )
@@ -79,6 +80,22 @@ func (e *Encryption) Encrypt(text string) (string, error) {
 }
 
 func (e *Encryption) Decrypt(cryptoText string) (string, error) {
+	cipherText, _ := base64.URLEncoding.DecodeString(cryptoText)
 
-	return "", nil
+	block, err := aes.NewCipher(e.Key)
+	if err != nil {
+		return "", err
+	}
+
+	if len(cipherText) < aes.BlockSize {
+		return "", errors.New("cannot decrypt, crypto text is not in the right legnth")
+	}
+
+	iv := cipherText[:aes.BlockSize]
+	cipherText = cipherText[aes.BlockSize:]
+
+	stream := cipher.NewCFBDecrypter(block, iv)
+	stream.XORKeyStream(cipherText, cipherText)
+
+	return string(cipherText), nil
 }
