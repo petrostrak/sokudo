@@ -1,7 +1,11 @@
 package sokudo
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/rand"
+	"encoding/base64"
+	"io"
 	"os"
 )
 
@@ -49,4 +53,32 @@ func (s *Sokudo) CreateFileIfNotExists(path string) error {
 	}
 
 	return nil
+}
+
+type Encryption struct {
+	Key []byte
+}
+
+func (e *Encryption) Encrypt(text string) (string, error) {
+	plainText := []byte(text)
+	block, err := aes.NewCipher(e.Key)
+	if err != nil {
+		return "", err
+	}
+
+	cipherText := make([]byte, aes.BlockSize+len(plainText))
+	iv := cipherText[:aes.BlockSize]
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		return "", err
+	}
+
+	stream := cipher.NewCFBEncrypter(block, iv)
+	stream.XORKeyStream(cipherText[aes.BlockSize:], plainText)
+
+	return base64.URLEncoding.EncodeToString(cipherText), nil
+}
+
+func (e *Encryption) Decrypt(cryptoText string) (string, error) {
+
+	return "", nil
 }
