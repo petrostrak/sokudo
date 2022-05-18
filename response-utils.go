@@ -64,3 +64,23 @@ func (s *Sokudo) DownloadFile(w http.ResponseWriter, r *http.Request, pathToFile
 
 	return nil
 }
+
+func (s *Sokudo) Error404(w http.ResponseWriter, r *http.Request) {
+	s.ErrorStatus(w, http.StatusNotFound)
+}
+
+func (s *Sokudo) Error500(w http.ResponseWriter, r *http.Request) {
+	s.ErrorStatus(w, http.StatusInternalServerError)
+}
+
+func (s *Sokudo) Error401(w http.ResponseWriter, r *http.Request) {
+	s.ErrorStatus(w, http.StatusUnauthorized)
+}
+
+func (s *Sokudo) Error403(w http.ResponseWriter, r *http.Request) {
+	s.ErrorStatus(w, http.StatusForbidden)
+}
+
+func (s *Sokudo) ErrorStatus(w http.ResponseWriter, status int) {
+	http.Error(w, http.StatusText(status), status)
+}
