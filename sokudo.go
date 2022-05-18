@@ -11,6 +11,7 @@ import (
 	"github.com/CloudyKit/jet/v6"
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
+	"github.com/gomodule/redigo/redis"
 	"github.com/joho/godotenv"
 	"github.com/petrostrak/sokudo/render"
 	"github.com/petrostrak/sokudo/session"
@@ -220,4 +221,21 @@ func (s *Sokudo) BuildDSN() string {
 	}
 
 	return dsn
+}
+
+func (s *Sokudo) createRedisPool() *redis.Pool {
+	return &redis.Pool{
+		MaxIdle:     50,
+		MaxActive:   10000,
+		IdleTimeout: 240 * time.Second,
+		Dial: func() (redis.Conn, error) {
+			return redis.Dial("tcp",
+				s.config.redis.host,
+				redis.DialPassword(s.config.redis.password))
+		},
+		TestOnBorrow: func(conn redis.Conn, t time.Time) error {
+			_, err := conn.Do("PING")
+			return err
+		},
+	}
 }
