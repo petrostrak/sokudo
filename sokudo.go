@@ -13,6 +13,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/gomodule/redigo/redis"
 	"github.com/joho/godotenv"
+	"github.com/petrostrak/sokudo/cache"
 	"github.com/petrostrak/sokudo/render"
 	"github.com/petrostrak/sokudo/session"
 )
@@ -237,5 +238,12 @@ func (s *Sokudo) createRedisPool() *redis.Pool {
 			_, err := conn.Do("PING")
 			return err
 		},
+	}
+}
+
+func (s *Sokudo) createClientRedisCache() *cache.RedisCache {
+	return &cache.RedisCache{
+		Conn:   s.createRedisPool(),
+		Prefix: s.config.redis.prefix,
 	}
 }
