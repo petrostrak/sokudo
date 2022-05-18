@@ -59,7 +59,7 @@ func (s *Sokudo) DownloadFile(w http.ResponseWriter, r *http.Request, pathToFile
 	fullPath := path.Join(pathToFile, fileName)
 	fileToServe := filepath.Clean(fullPath)
 
-	w.Header().Set("Content-Type", fmt.Sprintf("attachment; file=\"%s\"", fileName))
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; file=\"%s\"", fileName))
 	http.ServeFile(w, r, fileToServe)
 
 	return nil
