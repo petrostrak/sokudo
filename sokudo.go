@@ -35,6 +35,7 @@ type Sokudo struct {
 	DB            Database
 	JetViews      *jet.Set
 	EncryptionKey string
+	Cache         cache.Cache
 	config
 }
 
@@ -86,6 +87,11 @@ func (s *Sokudo) New(rootPath string) error {
 			DataType: os.Getenv("DATABASE_TYPE"),
 			Pool:     db,
 		}
+	}
+
+	if os.Getenv("CACHE") == "redis" {
+		myRedisCache := s.createClientRedisCache()
+		s.Cache = myRedisCache
 	}
 
 	s.InfoLog = infoLog
