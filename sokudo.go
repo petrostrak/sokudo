@@ -22,6 +22,10 @@ const (
 	version = "1.0.0"
 )
 
+var (
+	myRedisCache *cache.RedisCache
+)
+
 type Sokudo struct {
 	AppName       string
 	Debug         bool
@@ -89,8 +93,8 @@ func (s *Sokudo) New(rootPath string) error {
 		}
 	}
 
-	if os.Getenv("CACHE") == "redis" {
-		myRedisCache := s.createClientRedisCache()
+	if os.Getenv("CACHE") == "redis" || os.Getenv("SESSION_TYPE") == "redis" {
+		myRedisCache = s.createClientRedisCache()
 		s.Cache = myRedisCache
 	}
 
@@ -130,8 +134,15 @@ func (s *Sokudo) New(rootPath string) error {
 		CookieName:     s.config.cookie.name,
 		SessionType:    s.config.sessionType,
 		CookieDomain:   s.config.cookie.domain,
-		DBPool:         s.DB.Pool,
 	}
+
+	switch s.config.sessionType {
+	case "redis":
+		sess.RedisPool = myRedisCache.Conn
+	case "mysql", "mariadb", "postgres", "postresql":
+		sess.DBPool = s.DB.Pool
+	}
+
 	s.Session = sess.InitSession()
 	s.EncryptionKey = os.Getenv("KEY")
 
