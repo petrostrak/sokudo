@@ -31,3 +31,19 @@ func TestRedisCache_Has(t *testing.T) {
 		t.Error("foo not found in cache, but it should be there")
 	}
 }
+
+func TestRedisCache_GET(t *testing.T) {
+	err := testRedisCache.Set("foo", "bar")
+	if err != nil {
+		t.Error(err)
+	}
+
+	x, err := testRedisCache.Get("foo")
+	if err != nil {
+		t.Error(err)
+	}
+
+	if x != "bar" {
+		t.Error("did not get correct value from cache")
+	}
+}
