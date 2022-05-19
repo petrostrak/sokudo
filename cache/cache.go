@@ -129,22 +129,9 @@ func (c *RedisCache) EmptyByMatch(s string) error {
 	conn := c.Conn.Get()
 	defer conn.Close()
 
-	iter := 0
-	keys := []string{}
-
-	for {
-		arr, err := redis.Values(conn.Do("SCAN", iter, "MATCH", fmt.Sprintf("%s*", key)))
-		if err != nil {
-			return err
-		}
-
-		iter, _ = redis.Int(arr[0], nil)
-		k, _ := redis.Strings(arr[1], nil)
-		keys = append(keys, k...)
-
-		if iter == 0 {
-			break
-		}
+	keys, err := c.getKeys(key)
+	if err != nil {
+		return err
 	}
 
 	for _, key := range keys {
@@ -158,6 +145,47 @@ func (c *RedisCache) EmptyByMatch(s string) error {
 }
 
 func (c *RedisCache) Empty() error {
+	key := fmt.Sprintf("%s:", c.Prefix)
+	conn := c.Conn.Get()
+	defer conn.Close()
+
+	keys, err := c.getKeys(key)
+	if err != nil {
+		return err
+	}
+
+	for _, key := range keys {
+		err := c.Forget(key)
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
+}
+
+func (c *RedisCache) getKeys(pattern string) ([]string, error) {
+	conn := c.Conn.Get()
+	defer conn.Close()
+
+	iter := 0
+	keys := []string{}
+
+	for {
+		arr, err := redis.Values(conn.Do("SCAN", iter, "MATCH", fmt.Sprintf("%s*", pattern)))
+		if err != nil {
+			return keys, err
+		}
+
+		iter, _ = redis.Int(arr[0], nil)
+		k, _ := redis.Strings(arr[1], nil)
+		keys = append(keys, k...)
+
+		if iter == 0 {
+			break
+		}
+	}
+
+	return keys, nil
+
 }
