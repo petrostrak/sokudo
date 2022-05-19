@@ -125,6 +125,34 @@ func (c *RedisCache) Forget(s string) error {
 }
 
 func (c *RedisCache) EmptyByMatch(s string) error {
+	key := fmt.Sprintf("%s:%s", c.Prefix, s)
+	conn := c.Conn.Get()
+	defer conn.Close()
+
+	iter := 0
+	keys := []string{}
+
+	for {
+		arr, err := redis.Values(conn.Do("SCAN", iter, "MATCH", fmt.Sprintf("%s*", key)))
+		if err != nil {
+			return err
+		}
+
+		iter, _ = redis.Int(arr[0], nil)
+		k, _ := redis.Strings(arr[1], nil)
+		keys = append(keys, k...)
+
+		if iter == 0 {
+			break
+		}
+	}
+
+	for _, key := range keys {
+		err := c.Forget(key)
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
