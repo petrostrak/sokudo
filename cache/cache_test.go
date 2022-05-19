@@ -89,3 +89,52 @@ func TestRedisCache_Empty(t *testing.T) {
 		t.Error("alpha found in cache, and it should not be there")
 	}
 }
+
+func TestRedisCache_EmptyByMatch(t *testing.T) {
+	err := testRedisCache.Set("alpha", "foo")
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = testRedisCache.Set("alpha2", "foo")
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = testRedisCache.Set("beta", "foo")
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = testRedisCache.EmptyByMatch("alpha")
+	if err != nil {
+		t.Error(err)
+	}
+
+	inCache, err := testRedisCache.Has("alpha")
+	if err != nil {
+		t.Error(err)
+	}
+
+	if inCache {
+		t.Error("alpha found in cache, and it should not be there")
+	}
+
+	inCache, err = testRedisCache.Has("alpha2")
+	if err != nil {
+		t.Error(err)
+	}
+
+	if inCache {
+		t.Error("alpha2 found in cache, and it should not be there")
+	}
+
+	inCache, err = testRedisCache.Has("beta")
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !inCache {
+		t.Error("beta not found in cache, and it should be there")
+	}
+}
