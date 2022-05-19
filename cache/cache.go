@@ -36,6 +36,21 @@ func encode(item Entry) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
+func decode(s string) (Entry, error) {
+	item := Entry{}
+	b := bytes.Buffer{}
+	b.Write([]byte(s))
+
+	d := gob.NewDecoder(&b)
+
+	err := d.Decode(&item)
+	if err != nil {
+		return nil, err
+	}
+
+	return item, nil
+}
+
 func (c *RedisCache) Has(s string) (bool, error) {
 	key := fmt.Sprintf("%s:%s", c.Prefix, s)
 	conn := c.Conn.Get()
