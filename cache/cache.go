@@ -1,6 +1,8 @@
 package cache
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 
 	"github.com/gomodule/redigo/redis"
@@ -21,6 +23,18 @@ type RedisCache struct {
 }
 
 type Entry map[string]interface{}
+
+func encode(item Entry) ([]byte, error) {
+	b := bytes.Buffer{}
+	e := gob.NewEncoder(&b)
+
+	err := e.Encode(item)
+	if err != nil {
+		return nil, err
+	}
+
+	return b.Bytes(), nil
+}
 
 func (c *RedisCache) Has(s string) (bool, error) {
 	key := fmt.Sprintf("%s:%s", c.Prefix, s)
