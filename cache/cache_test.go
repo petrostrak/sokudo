@@ -68,3 +68,24 @@ func TestRedisCache_Forget(t *testing.T) {
 		t.Error("alpha found in cache, and it should not be there")
 	}
 }
+
+func TestRedisCache_Empty(t *testing.T) {
+	err := testRedisCache.Set("alpha", "beta")
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = testRedisCache.Empty()
+	if err != nil {
+		t.Error(err)
+	}
+
+	inCache, err := testRedisCache.Has("alpha")
+	if err != nil {
+		t.Error(err)
+	}
+
+	if inCache {
+		t.Error("alpha found in cache, and it should not be there")
+	}
+}
