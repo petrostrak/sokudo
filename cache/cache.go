@@ -65,8 +65,23 @@ func (c *RedisCache) Has(s string) (bool, error) {
 }
 
 func (c *RedisCache) Get(s string) (interface{}, error) {
+	key := fmt.Sprintf("%s:%s", c.Prefix, s)
+	conn := c.Conn.Get()
+	defer conn.Close()
 
-	return "", nil
+	cacheEntry, err := redis.Bytes(conn.Do("GET", key))
+	if err != nil {
+		return nil, err
+	}
+
+	decoded, err := decode(string(cacheEntry))
+	if err != nil {
+		return nil, err
+	}
+
+	item := decoded[key]
+
+	return item, nil
 }
 
 func (c *RedisCache) Set(s string, data interface{}, ttl ...int) error {
