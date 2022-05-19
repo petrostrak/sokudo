@@ -32,7 +32,7 @@ func TestRedisCache_Has(t *testing.T) {
 	}
 }
 
-func TestRedisCache_GET(t *testing.T) {
+func TestRedisCache_Get(t *testing.T) {
 	err := testRedisCache.Set("foo", "bar")
 	if err != nil {
 		t.Error(err)
@@ -45,5 +45,26 @@ func TestRedisCache_GET(t *testing.T) {
 
 	if x != "bar" {
 		t.Error("did not get correct value from cache")
+	}
+}
+
+func TestRedisCache_Forget(t *testing.T) {
+	err := testRedisCache.Set("alpha", "beta")
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = testRedisCache.Forget("alpha")
+	if err != nil {
+		t.Error(err)
+	}
+
+	inCache, err := testRedisCache.Has("alpha")
+	if err != nil {
+		t.Error(err)
+	}
+
+	if inCache {
+		t.Error("alpha found in cache, and it should not be there")
 	}
 }
