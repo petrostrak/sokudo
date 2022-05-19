@@ -138,3 +138,17 @@ func TestRedisCache_EmptyByMatch(t *testing.T) {
 		t.Error("beta not found in cache, and it should be there")
 	}
 }
+
+func TestEncodeDecode(t *testing.T) {
+	entry := Entry{}
+	entry["foo"] = "bar"
+	bytes, err := encode(entry)
+	if err != nil {
+		t.Error(err)
+	}
+
+	_, err = decode(string(bytes))
+	if err != nil {
+		t.Error(err)
+	}
+}
