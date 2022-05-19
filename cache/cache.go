@@ -112,6 +112,14 @@ func (c *RedisCache) Set(s string, value interface{}, expires ...int) error {
 }
 
 func (c *RedisCache) Forget(s string) error {
+	key := fmt.Sprintf("%s:%s", c.Prefix, s)
+	conn := c.Conn.Get()
+	defer conn.Close()
+
+	_, err := conn.Do("DEL", key)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
