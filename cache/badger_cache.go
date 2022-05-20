@@ -1,6 +1,8 @@
 package cache
 
 import (
+	"time"
+
 	"github.com/dgraph-io/badger/v3"
 )
 
@@ -51,6 +53,26 @@ func (b *BadgerCache) Get(s string) (interface{}, error) {
 }
 
 func (b *BadgerCache) Set(s string, value interface{}, expires ...int) error {
+	entry := Entry{}
+	entry[s] = value
+	encoded, err := encode(entry)
+	if err != nil {
+		return err
+	}
+
+	if len(expires) > 0 {
+		err = b.Conn.Update(func(txn *badger.Txn) error {
+			e := badger.NewEntry([]byte(s), encoded).WithTTL(time.Second * time.Duration(expires[0]))
+			err = txn.SetEntry(e)
+			return err
+		})
+	} else {
+		err = b.Conn.Update(func(txn *badger.Txn) error {
+			e := badger.NewEntry([]byte(s), encoded)
+			err = txn.SetEntry(e)
+			return err
+		})
+	}
 
 	return nil
 }
