@@ -87,13 +87,11 @@ func (b *BadgerCache) Forget(s string) error {
 }
 
 func (b *BadgerCache) EmptyByMatch(s string) error {
-
-	return nil
+	return b.emptyByMatch(s)
 }
 
 func (b *BadgerCache) Empty() error {
-
-	return nil
+	return b.emptyByMatch("")
 }
 
 func (b *BadgerCache) emptyByMatch(s string) error {
