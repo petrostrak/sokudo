@@ -78,8 +78,12 @@ func (b *BadgerCache) Set(s string, value interface{}, expires ...int) error {
 }
 
 func (b *BadgerCache) Forget(s string) error {
+	err := b.Conn.Update(func(txn *badger.Txn) error {
+		err := txn.Delete([]byte(s))
+		return err
+	})
 
-	return nil
+	return err
 }
 
 func (b *BadgerCache) EmptyByMatch(s string) error {
