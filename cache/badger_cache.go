@@ -14,7 +14,7 @@ type BadgerCache struct {
 func (b *BadgerCache) Has(s string) (bool, error) {
 	_, err := b.Get(s)
 	if err != nil {
-		return false, err
+		return false, nil
 	}
 
 	return true, nil
@@ -30,7 +30,7 @@ func (b *BadgerCache) Get(s string) (interface{}, error) {
 		}
 
 		err = item.Value(func(val []byte) error {
-			fromCache = append(fromCache, val...)
+			fromCache = append([]byte{}, val...)
 			return nil
 		})
 		if err != nil {
