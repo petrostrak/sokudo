@@ -48,3 +48,24 @@ func TestBadgerCache_Get(t *testing.T) {
 		t.Error("did not get correct value from cache")
 	}
 }
+
+func TestBadgerCache_Forget(t *testing.T) {
+	err := testBadgerCache.Set("foo", "bar")
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = testBadgerCache.Forget("foo")
+	if err != nil {
+		t.Error(err)
+	}
+
+	inCache, err := testBadgerCache.Has("foo")
+	if err != nil {
+		t.Error(err)
+	}
+
+	if inCache {
+		t.Error("foo found in cache, and it shouldn't be there")
+	}
+}
