@@ -13,7 +13,7 @@ import (
 
 var (
 	testRedisCache  RedisCache
-	testBadherCache BadgerCache
+	testBadgerCache BadgerCache
 )
 
 func TestMain(m *testing.M) {
@@ -53,7 +53,7 @@ func TestMain(m *testing.M) {
 	}
 
 	db, _ := badger.Open(badger.DefaultOptions("./testdata/tmp/badger"))
-	testBadherCache.Conn = db
+	testBadgerCache.Conn = db
 
 	os.Exit(m.Run())
 }

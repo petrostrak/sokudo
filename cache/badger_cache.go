@@ -29,10 +29,11 @@ func (b *BadgerCache) Get(s string) (interface{}, error) {
 			return err
 		}
 
-		if err = item.Value(func(val []byte) error {
+		err = item.Value(func(val []byte) error {
 			fromCache = append(fromCache, val...)
 			return nil
-		}); err != nil {
+		})
+		if err != nil {
 			return err
 		}
 
