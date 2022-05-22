@@ -329,7 +329,7 @@ func (s *Sokudo) createClientBadgerCache() *cache.BadgerCache {
 }
 
 func (s *Sokudo) createMailer() mailer.Mail {
-	port, _ := strconv.Atoi(os.Getenv("SMTP_POSR"))
+	port, _ := strconv.Atoi(os.Getenv("SMTP_PORT"))
 	m := mailer.Mail{
 		Domain:      os.Getenv("MAIL_DOMAIN"),
 		Templates:   s.RootPath + "/mail",
