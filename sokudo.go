@@ -15,6 +15,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/joho/godotenv"
 	"github.com/petrostrak/sokudo/cache"
+	"github.com/petrostrak/sokudo/mailer"
 	"github.com/petrostrak/sokudo/render"
 	"github.com/petrostrak/sokudo/session"
 	"github.com/robfig/cron/v3"
@@ -46,6 +47,7 @@ type Sokudo struct {
 	EncryptionKey string
 	Cache         cache.Cache
 	Scheduler     *cron.Cron
+	Mail          mailer.Mail
 	config
 }
 
@@ -63,7 +65,7 @@ type config struct {
 func (s *Sokudo) New(rootPath string) error {
 	pathConfig := initPaths{
 		rootPath:    rootPath,
-		folderNames: []string{"handlers", "migrations", "views", "data", "public", "tmp", "logs", "middleware"},
+		folderNames: []string{"handlers", "migrations", "views", "mail", "data", "public", "tmp", "logs", "middleware"},
 	}
 
 	err := s.Init(pathConfig)
@@ -127,6 +129,7 @@ func (s *Sokudo) New(rootPath string) error {
 	s.Version = version
 	s.RootPath = rootPath
 	s.Routes = s.routes().(*chi.Mux)
+	s.Mail = s.createMailer()
 
 	s.config = config{
 		port:     os.Getenv("PORT"),
@@ -185,6 +188,8 @@ func (s *Sokudo) New(rootPath string) error {
 	}
 
 	s.createRenderer()
+
+	go s.Mail.ListenForMail()
 
 	return nil
 }
@@ -321,4 +326,26 @@ func (s *Sokudo) createClientBadgerCache() *cache.BadgerCache {
 	}
 
 	return &cacheClient
+}
+
+func (s *Sokudo) createMailer() mailer.Mail {
+	port, _ := strconv.Atoi(os.Getenv("SMTP_POSR"))
+	m := mailer.Mail{
+		Domain:      os.Getenv("MAIL_DOMAIN"),
+		Templates:   s.RootPath + "/mail",
+		Host:        os.Getenv("SMTP_HOST"),
+		Port:        port,
+		Username:    os.Getenv("SMTP_USERNAME"),
+		Password:    os.Getenv("SMTP_PASSWORD"),
+		Encryption:  os.Getenv("SMTP_ENCRYPTION"),
+		FromName:    os.Getenv("FROM_NAME"),
+		FromAddress: os.Getenv("FROM_ADDRESS"),
+		Jobs:        make(chan mailer.Message, 20),
+		Results:     make(chan mailer.Result, 20),
+		API:         os.Getenv("MAILER_API"),
+		APIKey:      os.Getenv("MAILER_KEY"),
+		APIUrl:      os.Getenv("MAILER_URL"),
+	}
+
+	return m
 }
