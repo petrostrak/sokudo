@@ -17,6 +17,7 @@ import (
 	"github.com/petrostrak/sokudo/cache"
 	"github.com/petrostrak/sokudo/render"
 	"github.com/petrostrak/sokudo/session"
+	"github.com/robfig/cron/v3"
 )
 
 const (
@@ -42,6 +43,7 @@ type Sokudo struct {
 	JetViews      *jet.Set
 	EncryptionKey string
 	Cache         cache.Cache
+	Scheduler     *cron.Cron
 	config
 }
 
@@ -98,6 +100,18 @@ func (s *Sokudo) New(rootPath string) error {
 	if os.Getenv("CACHE") == "redis" || os.Getenv("SESSION_TYPE") == "redis" {
 		myRedisCache = s.createClientRedisCache()
 		s.Cache = myRedisCache
+	}
+
+	if os.Getenv("CACHE") == "badger" {
+		myBadgerCache = s.createClientBadgerCache()
+		s.Cache = myBadgerCache
+
+		_, err = s.Scheduler.AddFunc("@daily", func() {
+			_ = myBadgerCache.Conn.RunValueLogGC(0.7)
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	s.InfoLog = infoLog
