@@ -285,7 +285,9 @@ func (s *Sokudo) createClientRedisCache() *cache.RedisCache {
 }
 
 func (s *Sokudo) createClientBadgerCache() *cache.BadgerCache {
-	cacheClient := cache.BadgerCache{}
+	cacheClient := cache.BadgerCache{
+		Conn: s.createBadgerConn(),
+	}
 
 	return &cacheClient
 }
