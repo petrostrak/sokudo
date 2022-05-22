@@ -1,5 +1,11 @@
 package mailer
 
+import (
+	"bytes"
+	"fmt"
+	"html/template"
+)
+
 type Mail struct {
 	Domain      string
 	Templates   string
@@ -50,5 +56,25 @@ func (m *Mail) Send(msg Message) error {
 }
 
 func (m *Mail) SendSMTPMessage(msg Message) error {
+	return nil
+}
 
+func (m *Mail) buildHTMLMessage(msg Message) (string, error) {
+	templateToRender := fmt.Sprintf("%s/%s.html.tmlp", m.Templates, msg.Template)
+
+	t, err := template.New("email-html").ParseFiles(templateToRender)
+	if err != nil {
+		return "", err
+	}
+
+	var tpl bytes.Buffer
+	if err := t.ExecuteTemplate(&tpl, "body", msg.Data); err != nil {
+		return "", err
+	}
+
+	return tpl.String(), nil
+}
+
+func (m *Mail) buildPlainTextMessage(msg Message) (string, error) {
+	return "", nil
 }
