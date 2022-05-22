@@ -27,6 +27,8 @@ const (
 var (
 	myRedisCache  *cache.RedisCache
 	myBadgerCache *cache.BadgerCache
+	redisPool     *redis.Pool
+	badgerConn    *badger.DB
 )
 
 type Sokudo struct {
@@ -100,11 +102,13 @@ func (s *Sokudo) New(rootPath string) error {
 	if os.Getenv("CACHE") == "redis" || os.Getenv("SESSION_TYPE") == "redis" {
 		myRedisCache = s.createClientRedisCache()
 		s.Cache = myRedisCache
+		redisPool = myRedisCache.Conn
 	}
 
 	if os.Getenv("CACHE") == "badger" {
 		myBadgerCache = s.createClientBadgerCache()
 		s.Cache = myBadgerCache
+		badgerConn = myBadgerCache.Conn
 
 		_, err = s.Scheduler.AddFunc("@daily", func() {
 			_ = myBadgerCache.Conn.RunValueLogGC(0.7)
@@ -206,7 +210,17 @@ func (s *Sokudo) ListenAndServe() {
 		WriteTimeout: 600 * time.Second,
 	}
 
-	defer s.DB.Pool.Close()
+	if s.DB.Pool != nil {
+		defer s.DB.Pool.Close()
+	}
+
+	if redisPool != nil {
+		defer redisPool.Close()
+	}
+
+	if badgerConn != nil {
+		defer badgerConn.Close()
+	}
 
 	s.InfoLog.Printf("Listening on port %s", os.Getenv("PORT"))
 	if err := srv.ListenAndServe(); err != nil {
