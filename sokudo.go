@@ -10,6 +10,7 @@ import (
 
 	"github.com/CloudyKit/jet/v6"
 	"github.com/alexedwards/scs/v2"
+	"github.com/dgraph-io/badger/v3"
 	"github.com/go-chi/chi/v5"
 	"github.com/gomodule/redigo/redis"
 	"github.com/joho/godotenv"
@@ -23,7 +24,8 @@ const (
 )
 
 var (
-	myRedisCache *cache.RedisCache
+	myRedisCache  *cache.RedisCache
+	myBadgerCache *cache.BadgerCache
 )
 
 type Sokudo struct {
@@ -266,9 +268,24 @@ func (s *Sokudo) createRedisPool() *redis.Pool {
 	}
 }
 
+func (s *Sokudo) createBadgerConn() *badger.DB {
+	db, err := badger.Open(badger.DefaultOptions(s.RootPath + "/tmp/badger"))
+	if err != nil {
+		return nil
+	}
+
+	return db
+}
+
 func (s *Sokudo) createClientRedisCache() *cache.RedisCache {
 	return &cache.RedisCache{
 		Conn:   s.createRedisPool(),
 		Prefix: s.config.redis.prefix,
 	}
+}
+
+func (s *Sokudo) createClientBadgerCache() *cache.BadgerCache {
+	cacheClient := cache.BadgerCache{}
+
+	return &cacheClient
 }
