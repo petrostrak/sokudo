@@ -43,3 +43,12 @@ func (m *Mail) ListenForMail() {
 		}
 	}
 }
+
+func (m *Mail) Send(msg Message) error {
+	// TODO: are we using an API or SMTP?
+	return m.SendSMTPMessage(msg)
+}
+
+func (m *Mail) SendSMTPMessage(msg Message) error {
+
+}
