@@ -99,6 +99,9 @@ func (s *Sokudo) New(rootPath string) error {
 		}
 	}
 
+	scheduler := cron.New()
+	s.Scheduler = scheduler
+
 	if os.Getenv("CACHE") == "redis" || os.Getenv("SESSION_TYPE") == "redis" {
 		myRedisCache = s.createClientRedisCache()
 		s.Cache = myRedisCache
