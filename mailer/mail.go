@@ -31,3 +31,15 @@ type Result struct {
 	Success bool
 	Error   error
 }
+
+func (m *Mail) ListenForMail() {
+	for {
+		msg := <-m.Jobs
+		err := m.Send(msg)
+		if err != nil {
+			m.Results <- Result{false, err}
+		} else {
+			m.Results <- Result{true, nil}
+		}
+	}
+}
