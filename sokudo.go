@@ -128,8 +128,8 @@ func (s *Sokudo) New(rootPath string) error {
 	s.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
 	s.Version = version
 	s.RootPath = rootPath
-	s.Routes = s.routes().(*chi.Mux)
 	s.Mail = s.createMailer()
+	s.Routes = s.routes().(*chi.Mux)
 
 	s.config = config{
 		port:     os.Getenv("PORT"),
