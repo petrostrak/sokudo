@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"time"
 
+	"github.com/vanng822/go-premailer/premailer"
 	mail "github.com/xhit/go-simple-mail/v2"
 )
 
@@ -132,7 +133,13 @@ func (m *Mail) buildHTMLMessage(msg Message) (string, error) {
 		return "", err
 	}
 
-	return tpl.String(), nil
+	formattedMsg := tpl.String()
+	formattedMsg, err = m.inlineCSS(formattedMsg)
+	if err != nil {
+		return "", err
+	}
+
+	return formattedMsg, nil
 }
 
 func (m *Mail) buildPlainTextMessage(msg Message) (string, error) {
@@ -149,4 +156,24 @@ func (m *Mail) buildPlainTextMessage(msg Message) (string, error) {
 	}
 
 	return tpl.String(), nil
+}
+
+func (m *Mail) inlineCSS(s string) (string, error) {
+	options := premailer.Options{
+		RemoveClasses:     false,
+		CssToAttributes:   false,
+		KeepBangImportant: true,
+	}
+
+	prem, err := premailer.NewPremailerFromString(s, &options)
+	if err != nil {
+		return "", err
+	}
+
+	html, err := prem.Transform()
+	if err != nil {
+		return "", err
+	}
+
+	return html, nil
 }
