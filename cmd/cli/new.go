@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -21,10 +22,9 @@ func doNew(appName string) {
 	log.Println("App name is", appName)
 
 	// git clone the skeleton application
-
 	color.Green("\tCloning repository...")
 	_, err := git.PlainClone("./"+appName, false, &git.CloneOptions{
-		URL:      "git@github.com/petrostrak/non-existing-repo.git",
+		URL:      "https://github.com/petrostrak/sokudo-app.git",
 		Progress: os.Stdout,
 		Depth:    1,
 	})
@@ -33,6 +33,10 @@ func doNew(appName string) {
 	}
 
 	// remove the .git directory
+	err = os.RemoveAll(fmt.Sprintf("./%s/.git", appName))
+	if err != nil {
+		exitGracefully(err)
+	}
 
 	// create a ready to go .env file
 

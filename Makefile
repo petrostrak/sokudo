@@ -13,3 +13,7 @@ coverage:
 ## build_cli: builds the command line tool sokudo and copies it to sokudo-helper
 build_cli:
 	@go build -o ../sokudo-helper/sokudo ./cmd/cli
+
+## build: builds the command line tool dist directory
+build:
+	@go build -o ./dist/sokudo ./cmd/cli
