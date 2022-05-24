@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -98,7 +97,7 @@ func updateSourceFiles(path string, fi os.FileInfo, err error) error {
 	// we have a matching file
 	if matched {
 		// read file content
-		read, err := ioutil.ReadFile(path)
+		read, err := os.ReadFile(path)
 		if err != nil {
 			exitGracefully(err)
 		}
@@ -106,7 +105,7 @@ func updateSourceFiles(path string, fi os.FileInfo, err error) error {
 		newContents := strings.Replace(string(read), "github.com/petrostrak/sokudo-helper", appURL, -1)
 
 		// write the changed file
-		err = ioutil.WriteFile(path, []byte(newContents), 0)
+		err = os.WriteFile(path, []byte(newContents), 0)
 		if err != nil {
 			exitGracefully(err)
 		}
