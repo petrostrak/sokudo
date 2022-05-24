@@ -12,7 +12,7 @@ import (
 )
 
 func (s *Sokudo) ReadJSON(w http.ResponseWriter, r *http.Request, data interface{}) error {
-	maxBytes := 1048576 // 1mb
+	maxBytes := 1048576 // one megabyte
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
 
 	dec := json.NewDecoder(r.Body)
@@ -29,7 +29,8 @@ func (s *Sokudo) ReadJSON(w http.ResponseWriter, r *http.Request, data interface
 	return nil
 }
 
-func (s *Sokudo) WriteJson(w http.ResponseWriter, status int, data interface{}, headers ...http.Header) error {
+// WriteJSON writes json from arbitrary data
+func (s *Sokudo) WriteJSON(w http.ResponseWriter, status int, data interface{}, headers ...http.Header) error {
 	out, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
 		return err
@@ -43,17 +44,16 @@ func (s *Sokudo) WriteJson(w http.ResponseWriter, status int, data interface{}, 
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-
 	_, err = w.Write(out)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
+// WriteXML writes xml from arbitrary data
 func (s *Sokudo) WriteXML(w http.ResponseWriter, status int, data interface{}, headers ...http.Header) error {
-	out, err := xml.MarshalIndent(data, "", "\t")
+	out, err := xml.MarshalIndent(data, "", "   ")
 	if err != nil {
 		return err
 	}
@@ -66,41 +66,43 @@ func (s *Sokudo) WriteXML(w http.ResponseWriter, status int, data interface{}, h
 
 	w.Header().Set("Content-Type", "application/xml")
 	w.WriteHeader(status)
-
 	_, err = w.Write(out)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
+// DownloadFile downloads a file
 func (s *Sokudo) DownloadFile(w http.ResponseWriter, r *http.Request, pathToFile, fileName string) error {
-	fullPath := path.Join(pathToFile, fileName)
-	fileToServe := filepath.Clean(fullPath)
-
+	fp := path.Join(pathToFile, fileName)
+	fileToServe := filepath.Clean(fp)
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; file=\"%s\"", fileName))
 	http.ServeFile(w, r, fileToServe)
-
 	return nil
 }
 
+// Error404 returns page not found response
 func (s *Sokudo) Error404(w http.ResponseWriter, r *http.Request) {
 	s.ErrorStatus(w, http.StatusNotFound)
 }
 
+// Error500 returns internal server error response
 func (s *Sokudo) Error500(w http.ResponseWriter, r *http.Request) {
 	s.ErrorStatus(w, http.StatusInternalServerError)
 }
 
-func (s *Sokudo) Error401(w http.ResponseWriter, r *http.Request) {
+// ErrorUnauthorized sends an unauthorized status (client is not known)
+func (s *Sokudo) ErrorUnauthorized(w http.ResponseWriter, r *http.Request) {
 	s.ErrorStatus(w, http.StatusUnauthorized)
 }
 
-func (s *Sokudo) Error403(w http.ResponseWriter, r *http.Request) {
+// ErrorForbidden returns a forbidden status message (client is known)
+func (s *Sokudo) ErrorForbidden(w http.ResponseWriter, r *http.Request) {
 	s.ErrorStatus(w, http.StatusForbidden)
 }
 
+// ErrorStatus returns a response with the supplied http status
 func (s *Sokudo) ErrorStatus(w http.ResponseWriter, status int) {
 	http.Error(w, http.StatusText(status), status)
 }

@@ -69,7 +69,7 @@ func (m *Mail) ListenForMail() {
 // it will send using the appropriate api; otherwise, it sends via smtp
 func (m *Mail) Send(msg Message) error {
 	if len(m.API) > 0 && len(m.APIKey) > 0 && len(m.APIUrl) > 0 && m.API != "smtp" {
-		m.ChooseAPI(msg)
+		return m.ChooseAPI(msg)
 	}
 	return m.SendSMTPMessage(msg)
 }
@@ -125,7 +125,7 @@ func (m *Mail) SendUsingAPI(msg Message, transport string) error {
 		PlainText:  plainMessage,
 	}
 
-	// Add attachments
+	// add attachments
 	err = m.addAPIAttachments(msg, tx)
 	if err != nil {
 		return err
@@ -154,7 +154,6 @@ func (m *Mail) addAPIAttachments(msg Message, tx *apimail.Transmission) error {
 			fileName := filepath.Base(x)
 			attach.Bytes = content
 			attach.Filename = fileName
-
 			attachments = append(attachments, attach)
 		}
 
@@ -215,8 +214,8 @@ func (m *Mail) SendSMTPMessage(msg Message) error {
 }
 
 // getEncryption returns the appropriate encryption type based on a string value
-func (m *Mail) getEncryption(s string) mail.Encryption {
-	switch s {
+func (m *Mail) getEncryption(e string) mail.Encryption {
+	switch e {
 	case "tls":
 		return mail.EncryptionSTARTTLS
 	case "ssl":
@@ -238,17 +237,17 @@ func (m *Mail) buildHTMLMessage(msg Message) (string, error) {
 	}
 
 	var tpl bytes.Buffer
-	if err := t.ExecuteTemplate(&tpl, "body", msg.Data); err != nil {
+	if err = t.ExecuteTemplate(&tpl, "body", msg.Data); err != nil {
 		return "", err
 	}
 
-	formattedMsg := tpl.String()
-	formattedMsg, err = m.inlineCSS(formattedMsg)
+	formattedMessage := tpl.String()
+	formattedMessage, err = m.inlineCSS(formattedMessage)
 	if err != nil {
 		return "", err
 	}
 
-	return formattedMsg, nil
+	return formattedMessage, nil
 }
 
 // buildPlainTextMessage creates the plaintext version of the message
@@ -261,11 +260,13 @@ func (m *Mail) buildPlainTextMessage(msg Message) (string, error) {
 	}
 
 	var tpl bytes.Buffer
-	if err := t.ExecuteTemplate(&tpl, "body", msg.Data); err != nil {
+	if err = t.ExecuteTemplate(&tpl, "body", msg.Data); err != nil {
 		return "", err
 	}
 
-	return tpl.String(), nil
+	plainMessage := tpl.String()
+
+	return plainMessage, nil
 }
 
 // inlineCSS takes html input as a string, and inlines css where possible

@@ -21,7 +21,7 @@ func doSessionTable() error {
 	upFile := skd.RootPath + "/migrations/" + fileName + "." + dbType + ".up.sql"
 	downFile := skd.RootPath + "/migrations/" + fileName + "." + dbType + ".down.sql"
 
-	err := copyFileFromTemplate("templates/migrations/"+dbType+"_session.sql", upFile)
+	err := copyFilefromTemplate("templates/migrations/"+dbType+"_session.sql", upFile)
 	if err != nil {
 		exitGracefully(err)
 	}

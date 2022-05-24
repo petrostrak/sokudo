@@ -7,12 +7,10 @@ import (
 	"os"
 )
 
-var (
-	//go:embed templates
-	templateFS embed.FS
-)
+//go:embed templates
+var templateFS embed.FS
 
-func copyFileFromTemplate(templatePath, targetFile string) error {
+func copyFilefromTemplate(templatePath, targetFile string) error {
 	if fileExists(targetFile) {
 		return errors.New(targetFile + " already exists!")
 	}
@@ -35,7 +33,6 @@ func copyDataToFile(data []byte, to string) error {
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -43,6 +40,5 @@ func fileExists(fileToCheck string) bool {
 	if _, err := os.Stat(fileToCheck); os.IsNotExist(err) {
 		return false
 	}
-
 	return true
 }

@@ -13,9 +13,7 @@ import (
 	"github.com/go-git/go-git/v5"
 )
 
-var (
-	appURL string
-)
+var appURL string
 
 func doNew(appName string) {
 	appName = strings.ToLower(appName)
@@ -24,7 +22,7 @@ func doNew(appName string) {
 	// sanitize the application name (convert url to single word)
 	if strings.Contains(appName, "/") {
 		exploded := strings.SplitAfter(appName, "/")
-		appName = exploded[len(exploded)-1]
+		appName = exploded[(len(exploded) - 1)]
 	}
 
 	log.Println("App name is", appName)
@@ -40,7 +38,7 @@ func doNew(appName string) {
 		exitGracefully(err)
 	}
 
-	// remove the .git directory
+	// remove .git directory
 	err = os.RemoveAll(fmt.Sprintf("./%s/.git", appName))
 	if err != nil {
 		exitGracefully(err)
@@ -62,7 +60,7 @@ func doNew(appName string) {
 		exitGracefully(err)
 	}
 
-	// create a Makefile
+	// create a makefile
 	if runtime.GOOS == "windows" {
 		source, err := os.Open(fmt.Sprintf("./%s/Makefile.windows", appName))
 		if err != nil {
@@ -98,6 +96,7 @@ func doNew(appName string) {
 			exitGracefully(err)
 		}
 	}
+	_ = os.Remove("./" + appName + "/Makefile.mac")
 	_ = os.Remove("./" + appName + "/Makefile.windows")
 
 	// update the go.mod file

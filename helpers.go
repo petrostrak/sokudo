@@ -5,17 +5,15 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
-	"errors"
 	"io"
 	"os"
 )
 
 const (
-	randomString = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM0987654321_+"
+	randomString = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0987654321_+"
 )
 
-// RandomString generates a random string length n from values in
-// const randomString.
+// RandomString generates a random string length n from values in the const randomString
 func (s *Sokudo) RandomString(n int) string {
 	str, r := make([]rune, n), []rune(randomString)
 
@@ -24,14 +22,14 @@ func (s *Sokudo) RandomString(n int) string {
 		x, y := p.Uint64(), uint64(len(r))
 		str[i] = r[x%y]
 	}
-
 	return string(str)
 }
 
-func (s *Sokudo) CreateDirIfNotExists(path string) error {
+// CreateDirIfNotExist creates a new directory if it does not exist
+func (s *Sokudo) CreateDirIfNotExist(path string) error {
 	const mode = 0755
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		err = os.Mkdir(path, mode)
+		err := os.Mkdir(path, mode)
 		if err != nil {
 			return err
 		}
@@ -40,6 +38,7 @@ func (s *Sokudo) CreateDirIfNotExists(path string) error {
 	return nil
 }
 
+// CreateFileIfNotExists creates a new file at path if it does not exist
 func (s *Sokudo) CreateFileIfNotExists(path string) error {
 	var _, err = os.Stat(path)
 	if os.IsNotExist(err) {
@@ -52,7 +51,6 @@ func (s *Sokudo) CreateFileIfNotExists(path string) error {
 			_ = file.Close()
 		}(file)
 	}
-
 	return nil
 }
 
@@ -61,41 +59,42 @@ type Encryption struct {
 }
 
 func (e *Encryption) Encrypt(text string) (string, error) {
-	plainText := []byte(text)
+	plaintext := []byte(text)
+
 	block, err := aes.NewCipher(e.Key)
 	if err != nil {
 		return "", err
 	}
 
-	cipherText := make([]byte, aes.BlockSize+len(plainText))
-	iv := cipherText[:aes.BlockSize]
+	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
+	iv := ciphertext[:aes.BlockSize]
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
 		return "", err
 	}
 
 	stream := cipher.NewCFBEncrypter(block, iv)
-	stream.XORKeyStream(cipherText[aes.BlockSize:], plainText)
+	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
 
-	return base64.URLEncoding.EncodeToString(cipherText), nil
+	return base64.URLEncoding.EncodeToString(ciphertext), nil
 }
 
 func (e *Encryption) Decrypt(cryptoText string) (string, error) {
-	cipherText, _ := base64.URLEncoding.DecodeString(cryptoText)
+	ciphertext, _ := base64.URLEncoding.DecodeString(cryptoText)
 
 	block, err := aes.NewCipher(e.Key)
 	if err != nil {
 		return "", err
 	}
 
-	if len(cipherText) < aes.BlockSize {
-		return "", errors.New("cannot decrypt, crypto text is not in the right legnth")
+	if len(ciphertext) < aes.BlockSize {
+		return "", err
 	}
 
-	iv := cipherText[:aes.BlockSize]
-	cipherText = cipherText[aes.BlockSize:]
+	iv := ciphertext[:aes.BlockSize]
+	ciphertext = ciphertext[aes.BlockSize:]
 
 	stream := cipher.NewCFBDecrypter(block, iv)
-	stream.XORKeyStream(cipherText, cipherText)
+	stream.XORKeyStream(ciphertext, ciphertext)
 
-	return string(cipherText), nil
+	return string(ciphertext), nil
 }

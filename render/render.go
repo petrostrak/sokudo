@@ -37,36 +37,34 @@ type TemplateData struct {
 	Flash           string
 }
 
-func (s *Render) defaultData(td *TemplateData, r *http.Request) *TemplateData {
-	td.Secure = s.Secure
-	td.ServerName = s.ServerName
-	td.Port = s.Port
+func (c *Render) defaultData(td *TemplateData, r *http.Request) *TemplateData {
+	td.Secure = c.Secure
+	td.ServerName = c.ServerName
 	td.CSRFToken = nosurf.Token(r)
-
-	if s.Session.Exists(r.Context(), "userID") {
+	td.Port = c.Port
+	if c.Session.Exists(r.Context(), "userID") {
 		td.IsAuthenticated = true
 	}
-
-	td.Error = s.Session.PopString(r.Context(), "error")
-	td.Flash = s.Session.PopString(r.Context(), "flash")
-
+	td.Error = c.Session.PopString(r.Context(), "error")
+	td.Flash = c.Session.PopString(r.Context(), "flash")
 	return td
 }
 
-func (s *Render) Page(w http.ResponseWriter, r *http.Request, view string, variables, data interface{}) error {
-	switch strings.ToLower(s.Renderer) {
+func (c *Render) Page(w http.ResponseWriter, r *http.Request, view string, variables, data interface{}) error {
+	switch strings.ToLower(c.Renderer) {
 	case "go":
-		return s.GoPage(w, r, view, data)
+		return c.GoPage(w, r, view, data)
 	case "jet":
-		return s.JetPage(w, r, view, variables, data)
+		return c.JetPage(w, r, view, variables, data)
 	default:
+
 	}
 	return errors.New("no rendering engine specified")
 }
 
 // GoPage renders a standard Go template
-func (s *Render) GoPage(w http.ResponseWriter, r *http.Request, view string, data interface{}) error {
-	tmpl, err := template.ParseFiles(fmt.Sprintf("%s/views/%s.page.tmpl", s.RootPath, view))
+func (c *Render) GoPage(w http.ResponseWriter, r *http.Request, view string, data interface{}) error {
+	tmpl, err := template.ParseFiles(fmt.Sprintf("%s/views/%s.page.tmpl", c.RootPath, view))
 	if err != nil {
 		return err
 	}
@@ -84,8 +82,8 @@ func (s *Render) GoPage(w http.ResponseWriter, r *http.Request, view string, dat
 	return nil
 }
 
-// JetPage renders a template using the Jet Templating engine
-func (s *Render) JetPage(w http.ResponseWriter, r *http.Request, templateName string, variables, data interface{}) error {
+// JetPage renders a template using the Jet templating engine
+func (c *Render) JetPage(w http.ResponseWriter, r *http.Request, templateName string, variables, data interface{}) error {
 	var vars jet.VarMap
 
 	if variables == nil {
@@ -99,9 +97,9 @@ func (s *Render) JetPage(w http.ResponseWriter, r *http.Request, templateName st
 		td = data.(*TemplateData)
 	}
 
-	td = s.defaultData(td, r)
+	td = c.defaultData(td, r)
 
-	t, err := s.JetViews.GetTemplate(fmt.Sprintf("%s.jet", templateName))
+	t, err := c.JetViews.GetTemplate(fmt.Sprintf("%s.jet", templateName))
 	if err != nil {
 		log.Println(err)
 		return err
@@ -111,6 +109,5 @@ func (s *Render) JetPage(w http.ResponseWriter, r *http.Request, templateName st
 		log.Println(err)
 		return err
 	}
-
 	return nil
 }

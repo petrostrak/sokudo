@@ -33,6 +33,8 @@ var (
 	badgerConn    *badger.DB
 )
 
+// Celeritas is the overall type for the Celeritas package. Members that are exported in this type
+// are available to any application that uses it.
 type Sokudo struct {
 	AppName       string
 	Debug         bool
@@ -45,12 +47,12 @@ type Sokudo struct {
 	Session       *scs.SessionManager
 	DB            Database
 	JetViews      *jet.Set
+	config        config
 	EncryptionKey string
 	Cache         cache.Cache
 	Scheduler     *cron.Cron
 	Mail          mailer.Mail
-	config
-	Server
+	Server        Server
 }
 
 type Server struct {
@@ -62,15 +64,15 @@ type Server struct {
 
 type config struct {
 	port        string
-	rendeder    string
+	renderer    string
 	cookie      cookieConfig
 	sessionType string
 	database    databaseConfig
 	redis       redisConfig
 }
 
-// New reads the .env file, creates our application config, populates the Sokudo type with settings
-// based of .env values, and creates necessary folders and files if they don't exist
+// New reads the .env file, creates our application config, populates the Celeritas type with settings
+// based on .env values, and creates necessary folders and files if they don't exist
 func (s *Sokudo) New(rootPath string) error {
 	pathConfig := initPaths{
 		rootPath:    rootPath,
@@ -103,7 +105,6 @@ func (s *Sokudo) New(rootPath string) error {
 			errorLog.Println(err)
 			os.Exit(1)
 		}
-
 		s.DB = Database{
 			DataType: os.Getenv("DATABASE_TYPE"),
 			Pool:     db,
@@ -142,7 +143,7 @@ func (s *Sokudo) New(rootPath string) error {
 
 	s.config = config{
 		port:     os.Getenv("PORT"),
-		rendeder: os.Getenv("RENDERER"),
+		renderer: os.Getenv("RENDERER"),
 		cookie: cookieConfig{
 			name:     os.Getenv("COOKIE_NAME"),
 			lifetime: os.Getenv("COOKIE_LIFETIME"),
@@ -175,8 +176,9 @@ func (s *Sokudo) New(rootPath string) error {
 	}
 
 	// create session
+
 	sess := session.Session{
-		CookieLifetime: s.cookie.lifetime,
+		CookieLifetime: s.config.cookie.lifetime,
 		CookiePersist:  s.config.cookie.persist,
 		CookieName:     s.config.cookie.name,
 		SessionType:    s.config.sessionType,
@@ -186,7 +188,7 @@ func (s *Sokudo) New(rootPath string) error {
 	switch s.config.sessionType {
 	case "redis":
 		sess.RedisPool = myRedisCache.Conn
-	case "mysql", "mariadb", "postgres", "postresql":
+	case "mysql", "postgres", "mariadb", "postgresql":
 		sess.DBPool = s.DB.Pool
 	}
 
@@ -198,39 +200,36 @@ func (s *Sokudo) New(rootPath string) error {
 			jet.NewOSFileSystemLoader(fmt.Sprintf("%s/views", rootPath)),
 			jet.InDevelopmentMode(),
 		)
-
 		s.JetViews = views
 	} else {
 		var views = jet.NewSet(
 			jet.NewOSFileSystemLoader(fmt.Sprintf("%s/views", rootPath)),
 		)
-
 		s.JetViews = views
 	}
 
 	s.createRenderer()
-
 	go s.Mail.ListenForMail()
 
 	return nil
 }
 
+// Init creates necessary folders for our Celeritas application
 func (s *Sokudo) Init(p initPaths) error {
 	root := p.rootPath
 	for _, path := range p.folderNames {
-		// crate folder if it doesn't exist
-		err := s.CreateDirIfNotExists(root + "/" + path)
+		// create folder if it doesn't exist
+		err := s.CreateDirIfNotExist(root + "/" + path)
 		if err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
 
 // ListenAndServe starts the web server
 func (s *Sokudo) ListenAndServe() {
-	srv := http.Server{
+	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%s", os.Getenv("PORT")),
 		ErrorLog:     s.ErrorLog,
 		Handler:      s.Routes,
@@ -252,9 +251,8 @@ func (s *Sokudo) ListenAndServe() {
 	}
 
 	s.InfoLog.Printf("Listening on port %s", os.Getenv("PORT"))
-	if err := srv.ListenAndServe(); err != nil {
-		s.ErrorLog.Fatal(err)
-	}
+	err := srv.ListenAndServe()
+	s.ErrorLog.Fatal(err)
 }
 
 func (s *Sokudo) checkDotEnv(path string) error {
@@ -262,91 +260,28 @@ func (s *Sokudo) checkDotEnv(path string) error {
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
 func (s *Sokudo) startLoggers() (*log.Logger, *log.Logger) {
-	var infoLog, errorLog *log.Logger
+	var infoLog *log.Logger
+	var errorLog *log.Logger
 
-	infoLog = log.New(os.Stdout, "[INFO]\t", log.Ldate|log.Ltime)
-	errorLog = log.New(os.Stdout, "[ERROR]\t", log.Ldate|log.Ltime|log.Lshortfile)
+	infoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	return infoLog, errorLog
 }
 
 func (s *Sokudo) createRenderer() {
-	myRender := render.Render{
-		Renderer: s.config.rendeder,
+	myRenderer := render.Render{
+		Renderer: s.config.renderer,
 		RootPath: s.RootPath,
 		Port:     s.config.port,
 		JetViews: s.JetViews,
 		Session:  s.Session,
 	}
-
-	s.Render = &myRender
-}
-
-func (s *Sokudo) BuildDSN() string {
-	var dsn string
-
-	switch os.Getenv("DATABASE_TYPE") {
-	case "postgres", "postgresql":
-		dsn = fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=%s timezone=UTC connect_timeout=5",
-			os.Getenv("DATABASE_HOST"),
-			os.Getenv("DATABASE_PORT"),
-			os.Getenv("DATABASE_USER"),
-			os.Getenv("DATABASE_NAME"),
-			os.Getenv("DATABASE_SSL_MODE"))
-
-		if os.Getenv("DATABASE_PASS") != "" {
-			dsn = fmt.Sprintf("%s password=%s", dsn, os.Getenv("DATABASE_PASS"))
-		}
-	default:
-	}
-
-	return dsn
-}
-
-func (s *Sokudo) createRedisPool() *redis.Pool {
-	return &redis.Pool{
-		MaxIdle:     50,
-		MaxActive:   10000,
-		IdleTimeout: 240 * time.Second,
-		Dial: func() (redis.Conn, error) {
-			return redis.Dial("tcp",
-				s.config.redis.host,
-				redis.DialPassword(s.config.redis.password))
-		},
-		TestOnBorrow: func(conn redis.Conn, t time.Time) error {
-			_, err := conn.Do("PING")
-			return err
-		},
-	}
-}
-
-func (s *Sokudo) createBadgerConn() *badger.DB {
-	db, err := badger.Open(badger.DefaultOptions(s.RootPath + "/tmp/badger"))
-	if err != nil {
-		return nil
-	}
-
-	return db
-}
-
-func (s *Sokudo) createClientRedisCache() *cache.RedisCache {
-	return &cache.RedisCache{
-		Conn:   s.createRedisPool(),
-		Prefix: s.config.redis.prefix,
-	}
-}
-
-func (s *Sokudo) createClientBadgerCache() *cache.BadgerCache {
-	cacheClient := cache.BadgerCache{
-		Conn: s.createBadgerConn(),
-	}
-
-	return &cacheClient
+	s.Render = &myRenderer
 }
 
 func (s *Sokudo) createMailer() mailer.Mail {
@@ -367,6 +302,72 @@ func (s *Sokudo) createMailer() mailer.Mail {
 		APIKey:      os.Getenv("MAILER_KEY"),
 		APIUrl:      os.Getenv("MAILER_URL"),
 	}
-
 	return m
+}
+
+func (s *Sokudo) createClientRedisCache() *cache.RedisCache {
+	cacheClient := cache.RedisCache{
+		Conn:   s.createRedisPool(),
+		Prefix: s.config.redis.prefix,
+	}
+	return &cacheClient
+}
+
+func (s *Sokudo) createClientBadgerCache() *cache.BadgerCache {
+	cacheClient := cache.BadgerCache{
+		Conn: s.createBadgerConn(),
+	}
+	return &cacheClient
+}
+
+func (s *Sokudo) createRedisPool() *redis.Pool {
+	return &redis.Pool{
+		MaxIdle:     50,
+		MaxActive:   10000,
+		IdleTimeout: 240 * time.Second,
+		Dial: func() (redis.Conn, error) {
+			return redis.Dial("tcp",
+				s.config.redis.host,
+				redis.DialPassword(s.config.redis.password))
+		},
+
+		TestOnBorrow: func(conn redis.Conn, t time.Time) error {
+			_, err := conn.Do("PING")
+			return err
+		},
+	}
+}
+
+func (s *Sokudo) createBadgerConn() *badger.DB {
+	db, err := badger.Open(badger.DefaultOptions(s.RootPath + "/tmp/badger"))
+	if err != nil {
+		return nil
+	}
+	return db
+}
+
+// BuildDSN builds the datasource name for our database, and returns it as a string
+func (s *Sokudo) BuildDSN() string {
+	var dsn string
+
+	switch os.Getenv("DATABASE_TYPE") {
+	case "postgres", "postgresql":
+		dsn = fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=%s timezone=UTC connect_timeout=5",
+			os.Getenv("DATABASE_HOST"),
+			os.Getenv("DATABASE_PORT"),
+			os.Getenv("DATABASE_USER"),
+			os.Getenv("DATABASE_NAME"),
+			os.Getenv("DATABASE_SSL_MODE"))
+
+		// we check to see if a database passsword has been supplied, since including "password=" with nothing
+		// after it sometimes causes postgres to fail to allow a connection.
+		if os.Getenv("DATABASE_PASS") != "" {
+			dsn = fmt.Sprintf("%s password=%s", dsn, os.Getenv("DATABASE_PASS"))
+		}
+
+	default:
+
+	}
+
+	return dsn
 }

@@ -3,13 +3,14 @@ package main
 func doMigrate(arg2, arg3 string) error {
 	dsn := getDSN()
 
-	// run migration command
+	// run the migration command
 	switch arg2 {
 	case "up":
 		err := skd.MigrateUp(dsn)
 		if err != nil {
 			return err
 		}
+
 	case "down":
 		if arg3 == "all" {
 			err := skd.MigrateDownAll(dsn)

@@ -52,28 +52,26 @@ func getDSN() string {
 				os.Getenv("DATABASE_NAME"),
 				os.Getenv("DATABASE_SSL_MODE"))
 		}
-
 		return dsn
 	}
-
 	return "mysql://" + skd.BuildDSN()
-
 }
 
 func showHelp() {
-	color.Yellow(`Available commmands:
+	color.Yellow(`Available commands:
 
-	help			- show the help commands
-	version			- print application version
-	migrate 		- runs all up migrations that have not been run previously
-	migrate down		- reverses the most recent migration
-	migrate reset		- runs all down migrations in reverse order, and then all up migrations
-	make migration <name>	- creates two new up and down migrations in the migrations folder
-	make auth		- creates and runs migrations for authentication tables, and creates models and middleware
-	make handler <name>		- creates a stub handler in the handlers directory
-	make model <name>		- creates a new model in the data directory
-	make session	- creates a table in the database as a session store
-	make mail		- creates two starter mail templates in the mail directory
+	help                  - show the help commands
+	version               - print application version
+	migrate               - runs all up migrations that have not been run previously
+	migrate down          - reverses the most recent migration
+	migrate reset         - runs all down migrations in reverse order, and then all up migrations
+	make migration <name> - creates two new up and down migrations in the migrations folder
+	make auth             - creates and runs migrations for authentication tables, and creates models and middleware
+	make handler <name>   - creates a stub handler in the handlers directory
+	make model <name>     - creates a new model in the data directory
+	make session          - creates a table in the database as a session store
+	make mail <name>      - creates two starter mail templates in the mail directory
+	
 	`)
 }
 
@@ -96,7 +94,7 @@ func updateSourceFiles(path string, fi os.FileInfo, err error) error {
 
 	// we have a matching file
 	if matched {
-		// read file content
+		// read file contents
 		read, err := os.ReadFile(path)
 		if err != nil {
 			exitGracefully(err)
@@ -115,7 +113,7 @@ func updateSourceFiles(path string, fi os.FileInfo, err error) error {
 }
 
 func updateSource() {
-	// walk entire project folder, includiong subfolders
+	// walk entire project folder, including subfolders
 	err := filepath.Walk(".", updateSourceFiles)
 	if err != nil {
 		exitGracefully(err)

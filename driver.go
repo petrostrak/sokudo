@@ -8,6 +8,8 @@ import (
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
+// OpenDB opens a connection to a sql database. dbType must be one of postgres (or pgx).
+// TODO: add support for mysql/mariadb
 func (s *Sokudo) OpenDB(dbType, dsn string) (*sql.DB, error) {
 	if dbType == "postgres" || dbType == "postgresql" {
 		dbType = "pgx"

@@ -100,8 +100,6 @@ func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request) {
 		_ = rt.Delete(h.App.Session.GetString(r.Context(), "remember_token"))
 	}
 
-	h.socialLogout(w, r)
-
 	// delete cookie
 	newCookie := http.Cookie{
 		Name:     fmt.Sprintf("_%s_remember", h.App.AppName),
