@@ -79,6 +79,8 @@ func doNew(appName string) {
 		if err != nil {
 			exitGracefully(err)
 		}
+
+		_ = os.Remove("./" + appName + "/Makefile.windows")
 	case "mac":
 		source, err := os.Open(fmt.Sprintf("./%s/Makefile.mac", appName))
 		if err != nil {
@@ -96,6 +98,8 @@ func doNew(appName string) {
 		if err != nil {
 			exitGracefully(err)
 		}
+
+		_ = os.Remove("./" + appName + "/Makefile.mac")
 	case "linux":
 		source, err := os.Open(fmt.Sprintf("./%s/Makefile.linux", appName))
 		if err != nil {
@@ -113,10 +117,9 @@ func doNew(appName string) {
 		if err != nil {
 			exitGracefully(err)
 		}
+
+		_ = os.Remove("./" + appName + "/Makefile.linux")
 	}
-	_ = os.Remove("./" + appName + "/Makefile.mac")
-	_ = os.Remove("./" + appName + "/Makefile.windows")
-	_ = os.Remove("./" + appName + "/Makefile.linux")
 
 	// update the go.mod file
 	color.Yellow("\tCreating go.mod file...")
