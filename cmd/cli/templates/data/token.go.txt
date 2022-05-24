@@ -1,10 +1,10 @@
 package data
 
 import (
-	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base32"
 	"errors"
+	"math/rand"
 	"net/http"
 	"strings"
 	"time"
@@ -13,11 +13,11 @@ import (
 )
 
 type Token struct {
-	ID        int       `db:"id" json:"id"`
+	ID        int       `db:"id,omitempty" json:"id"`
 	UserID    int       `db:"user_id" json:"user_id"`
 	FirstName string    `db:"first_name" json:"first_name"`
 	Email     string    `db:"email" json:"email"`
-	PlainText string    `db:"-" json:"token"`
+	PlainText string    `db:"token" json:"token"`
 	Hash      []byte    `db:"token_hash" json:"-"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
@@ -52,15 +52,15 @@ func (t *Token) GetUserForToken(token string) (*User, error) {
 }
 
 func (t *Token) GetTokensForUser(id int) ([]*Token, error) {
-	var tokes []*Token
+	var tokens []*Token
 	collection := upper.Collection(t.Table())
 	res := collection.Find(up.Cond{"user_id": id})
-	err := res.All(&tokes)
+	err := res.All(&tokens)
 	if err != nil {
 		return nil, err
 	}
 
-	return tokes, nil
+	return tokens, nil
 }
 
 func (t *Token) Get(id int) (*Token, error) {
@@ -151,7 +151,7 @@ func (t *Token) GenerateToken(userID int, ttl time.Duration) (*Token, error) {
 	return token, nil
 }
 
-func (tkn *Token) AuthenticateToken(r *http.Request) (*User, error) {
+func (t *Token) AuthenticateToken(r *http.Request) (*User, error) {
 	authorizationHeader := r.Header.Get("Authorization")
 	if authorizationHeader == "" {
 		return nil, errors.New("no authorization header received")
@@ -168,7 +168,7 @@ func (tkn *Token) AuthenticateToken(r *http.Request) (*User, error) {
 		return nil, errors.New("token wrong size")
 	}
 
-	tkn, err := tkn.GetByToken(token)
+	tkn, err := t.GetByToken(token)
 	if err != nil {
 		return nil, errors.New("no matching token found")
 	}
@@ -177,7 +177,7 @@ func (tkn *Token) AuthenticateToken(r *http.Request) (*User, error) {
 		return nil, errors.New("expired token")
 	}
 
-	user, err := tkn.GetUserForToken(token)
+	user, err := t.GetUserForToken(token)
 	if err != nil {
 		return nil, errors.New("no matching user found")
 	}
