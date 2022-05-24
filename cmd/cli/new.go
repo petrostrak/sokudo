@@ -61,7 +61,8 @@ func doNew(appName string) {
 	}
 
 	// create a makefile
-	if runtime.GOOS == "windows" {
+	switch runtime.GOOS {
+	case "windows":
 		source, err := os.Open(fmt.Sprintf("./%s/Makefile.windows", appName))
 		if err != nil {
 			exitGracefully(err)
@@ -78,8 +79,25 @@ func doNew(appName string) {
 		if err != nil {
 			exitGracefully(err)
 		}
-	} else {
-		source, err := os.Open(fmt.Sprintf("./%s/Makefile", appName))
+	case "mac":
+		source, err := os.Open(fmt.Sprintf("./%s/Makefile.mac", appName))
+		if err != nil {
+			exitGracefully(err)
+		}
+		defer source.Close()
+
+		destination, err := os.Create(fmt.Sprintf("./%s/Makefile", appName))
+		if err != nil {
+			exitGracefully(err)
+		}
+		defer destination.Close()
+
+		_, err = io.Copy(destination, source)
+		if err != nil {
+			exitGracefully(err)
+		}
+	case "linux":
+		source, err := os.Open(fmt.Sprintf("./%s/Makefile.linux", appName))
 		if err != nil {
 			exitGracefully(err)
 		}
@@ -98,6 +116,7 @@ func doNew(appName string) {
 	}
 	_ = os.Remove("./" + appName + "/Makefile.mac")
 	_ = os.Remove("./" + appName + "/Makefile.windows")
+	_ = os.Remove("./" + appName + "/Makefile.linux")
 
 	// update the go.mod file
 	color.Yellow("\tCreating go.mod file...")
@@ -124,7 +143,7 @@ func doNew(appName string) {
 	// run go mod tidy in the project directory
 	color.Yellow("\tRunning go mod tidy...")
 
-	cmd := exec.Command("go", "get", "github.com/petrostrak/sokudo")
+	cmd := exec.Command("go", "get", "github.com/petrostrak/sokudo@v1.0.0")
 	err = cmd.Start()
 	if err != nil {
 		exitGracefully(err)
