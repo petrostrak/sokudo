@@ -99,7 +99,6 @@ func doNew(appName string) {
 		}
 	}
 	_ = os.Remove("./" + appName + "/Makefile.windows")
-	_ = os.Remove("./" + appName + "/Makefile")
 
 	// update the go.mod file
 	color.Yellow("\tCreating go.mod file...")
@@ -125,12 +124,19 @@ func doNew(appName string) {
 
 	// run go mod tidy in the project directory
 	color.Yellow("\tRunning go mod tidy...")
-	cmd := exec.Command("go", "mod", "tidy")
+
+	cmd := exec.Command("go", "get", "github.com/petrostrak/sokudo")
 	err = cmd.Start()
 	if err != nil {
 		exitGracefully(err)
 	}
 
-	color.Green("Done building" + appURL)
+	cmd = exec.Command("go", "mod", "tidy")
+	err = cmd.Start()
+	if err != nil {
+		exitGracefully(err)
+	}
+
+	color.Green("Done building " + appURL)
 	color.Green("Happy hacking!")
 }
