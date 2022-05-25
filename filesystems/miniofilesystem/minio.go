@@ -1,4 +1,4 @@
-package mininfilesystem
+package miniofilesystem
 
 import (
 	"context"
