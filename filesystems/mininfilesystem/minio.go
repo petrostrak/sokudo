@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 	"path"
+	"strings"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+	"github.com/petrostrak/sokudo/filesystems"
 )
 
 type Minio struct {
@@ -47,4 +49,43 @@ func (m *Minio) Put(fileName, folder string) error {
 	}
 
 	return nil
+}
+
+func (m *Minio) List(prefix string) ([]filesystems.Listing, error) {
+	var listing []filesystems.Listing
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	client := m.getCredentials()
+
+	objCh := client.ListObjects(ctx, m.Bucket, minio.ListObjectsOptions{
+		Prefix:    prefix,
+		Recursive: true,
+	})
+
+	for obj := range objCh {
+		if obj.Err != nil {
+			fmt.Println(obj.Err)
+
+			return listing, obj.Err
+		}
+
+		if !strings.HasPrefix(obj.Key, ".") {
+			b := float64(obj.Size)
+			kb := b / 1024
+			mb := kb / 1024
+
+			item := filesystems.Listing{
+				Etag:         obj.ETag,
+				LastModified: obj.LastModified,
+				Key:          obj.Key,
+				Size:         mb,
+			}
+
+			listing = append(listing, item)
+		}
+	}
+
+	return listing, nil
 }
