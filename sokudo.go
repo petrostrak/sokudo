@@ -378,9 +378,8 @@ func (s *Sokudo) BuildDSN() string {
 func (s *Sokudo) createFileSystems() map[string]interface{} {
 	fileSystems := make(map[string]interface{})
 
-	if os.Getenv("MINIO_SECRET") == "" {
+	if os.Getenv("MINIO_SECRET") != "" {
 		useSSL := false
-
 		if strings.ToLower(os.Getenv("MINIO_USESSL")) == "true" {
 			useSSL = true
 		}
@@ -393,7 +392,6 @@ func (s *Sokudo) createFileSystems() map[string]interface{} {
 			Region:   os.Getenv("MINIO_REGION"),
 			Bucket:   os.Getenv("MINIO_BUCKET"),
 		}
-
 		fileSystems["MINIO"] = minio
 	}
 
