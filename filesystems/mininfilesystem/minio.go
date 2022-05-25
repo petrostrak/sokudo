@@ -1,7 +1,10 @@
 package mininfilesystem
 
 import (
+	"context"
+	"fmt"
 	"log"
+	"path"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -26,4 +29,22 @@ func (m *Minio) getCredentials() *minio.Client {
 	}
 
 	return client
+}
+
+func (m *Minio) Put(fileName, folder string) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	objName := path.Base(fileName)
+	client := m.getCredentials()
+
+	uploadInfo, err := client.FPutObject(ctx, m.Bucket, fmt.Sprintf("%s/%s", folder, objName), fileName, minio.PutObjectOptions{})
+	if err != nil {
+		log.Println("Failed with FPutObject")
+		log.Println(err)
+		log.Println("Upload info:", uploadInfo)
+		return err
+	}
+
+	return nil
 }
