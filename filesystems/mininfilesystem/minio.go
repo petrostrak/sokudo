@@ -89,3 +89,20 @@ func (m *Minio) List(prefix string) ([]filesystems.Listing, error) {
 
 	return listing, nil
 }
+
+func (m *Minio) Delete(itemsToDelete []string) bool {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	client := m.getCredentials()
+
+	for _, item := range itemsToDelete {
+		err := client.RemoveObject(ctx, m.Bucket, item, minio.RemoveObjectOptions{GovernanceBypass: true})
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
+	}
+
+	return true
+}
