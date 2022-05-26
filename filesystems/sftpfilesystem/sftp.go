@@ -84,7 +84,7 @@ func (s *SFTP) List(prefix string) ([]filesystems.Listing, error) {
 	if err != nil {
 		return listing, err
 	}
-	client.Close()
+	defer client.Close()
 
 	files, err := client.ReadDir(prefix)
 	if err != nil {
