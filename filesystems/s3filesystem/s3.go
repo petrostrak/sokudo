@@ -79,6 +79,10 @@ func (s *S3) Put(fileName, folder string) error {
 func (s *S3) List(prefix string) ([]filesystems.Listing, error) {
 	var listing []filesystems.Listing
 
+	if prefix == "/" {
+		prefix = ""
+	}
+
 	client := s.getCredentials()
 	sess := session.Must(session.NewSession(&aws.Config{
 		Endpoint:    &s.Endpoint,
