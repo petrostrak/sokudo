@@ -1,13 +1,18 @@
 package s3filesystem
 
 import (
+	"bytes"
 	"fmt"
+	"net/http"
+	"os"
+	"path"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/petrostrak/sokudo/filesystems"
 )
 
@@ -24,6 +29,50 @@ func (s *S3) getCredentials() *credentials.Credentials {
 }
 
 func (s *S3) Put(fileName, folder string) error {
+	client := s.getCredentials()
+	sess := session.Must(session.NewSession(&aws.Config{
+		Endpoint:    &s.Endpoint,
+		Region:      &s.Region,
+		Credentials: client,
+	}))
+
+	uploader := s3manager.NewUploader(sess)
+
+	f, err := os.Open(fileName)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	fileInfo, err := f.Stat()
+	if err != nil {
+		return err
+	}
+
+	var size = fileInfo.Size()
+
+	buffer := make([]byte, size)
+
+	_, err = f.Read(buffer)
+	if err != nil {
+		return err
+	}
+
+	fileBytes := bytes.NewReader(buffer)
+	fileType := http.DetectContentType(buffer)
+
+	_, err = uploader.Upload(&s3manager.UploadInput{
+		Bucket:      aws.String(s.Bucket),
+		Key:         aws.String(fmt.Sprintf("%s/%s", folder, path.Base(fileName))),
+		Body:        fileBytes,
+		ACL:         aws.String("public-read"),
+		ContentType: aws.String(fileType),
+		Metadata:    map[string]*string{"Key": aws.String("MetadataValue")},
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
