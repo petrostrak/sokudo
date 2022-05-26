@@ -84,14 +84,13 @@ func (w *WebDAV) Get(destination string, items ...string) error {
 
 	for _, item := range items {
 		err := func() error {
-			webDavFP := item
+			webDAVFP := item
 			localFP := fmt.Sprintf("%s/%s", destination, path.Base(item))
 
-			reader, err := client.ReadStream(webDavFP)
+			reader, err := client.ReadStream(webDAVFP)
 			if err != nil {
 				return err
 			}
-			defer reader.Close()
 
 			file, err := os.Create(localFP)
 			if err != nil {

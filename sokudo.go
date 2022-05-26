@@ -18,6 +18,7 @@ import (
 	"github.com/petrostrak/sokudo/cache"
 	"github.com/petrostrak/sokudo/filesystems/miniofilesystem"
 	"github.com/petrostrak/sokudo/filesystems/sftpfilesystem"
+	"github.com/petrostrak/sokudo/filesystems/webdavfilesystem"
 	"github.com/petrostrak/sokudo/mailer"
 	"github.com/petrostrak/sokudo/render"
 	"github.com/petrostrak/sokudo/session"
@@ -405,6 +406,16 @@ func (s *Sokudo) createFileSystems() map[string]interface{} {
 		}
 
 		fileSystems["SFTP"] = sftp
+	}
+
+	if os.Getenv("WEBDAV_HOST") != "" {
+		webDAV := webdavfilesystem.WebDAV{
+			Host: os.Getenv("WEBDAV_HOST"),
+			User: os.Getenv("WEBDAV_USER"),
+			Pass: os.Getenv("WEBDAV_PASS"),
+		}
+
+		fileSystems["WEBDAV"] = webDAV
 	}
 
 	return fileSystems
