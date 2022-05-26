@@ -1,6 +1,9 @@
 package s3filesystem
 
-import "github.com/petrostrak/sokudo/filesystems"
+import (
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/petrostrak/sokudo/filesystems"
+)
 
 type S3 struct {
 	Key      string
@@ -8,6 +11,10 @@ type S3 struct {
 	Region   string
 	Endpoint string
 	Bucket   string
+}
+
+func (s *S3) getCredentials() *credentials.Credentials {
+	return credentials.NewStaticCredentials(s.Key, s.Secret, "")
 }
 
 func (s *S3) Put(fileName, folder string) error {
