@@ -64,7 +64,7 @@ func (s *SFTP) Put(fileName, folder string) error {
 	}
 	defer f.Close()
 
-	f2, err := client.Create(path.Base(fileName))
+	f2, err := client.Create(fmt.Sprintf("%s/%s", folder, path.Base(fileName)))
 	if err != nil {
 		return err
 	}
