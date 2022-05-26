@@ -66,7 +66,16 @@ func (w *WebDAV) List(prefix string) ([]filesystems.Listing, error) {
 }
 
 func (w *WebDAV) Delete(itemsToDelete []string) bool {
-	return false
+	client := w.getCredentials()
+
+	for _, item := range itemsToDelete {
+		err := client.Remove(item)
+		if err != nil {
+			return false
+		}
+	}
+
+	return true
 }
 
 func (w *WebDAV) Get(destination string, items ...string) error {
