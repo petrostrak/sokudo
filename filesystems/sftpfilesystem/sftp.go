@@ -111,7 +111,20 @@ func (s *SFTP) List(prefix string) ([]filesystems.Listing, error) {
 }
 
 func (s *SFTP) Delete(itemsToDelete []string) bool {
-	return false
+	client, err := s.getCredentials()
+	if err != nil {
+		return false
+	}
+	client.Close()
+
+	for _, x := range itemsToDelete {
+		deleteErr := client.Remove(x)
+		if deleteErr != nil {
+			return false
+		}
+	}
+
+	return true
 }
 
 func (s *SFTP) Get(destination string, items ...string) error {
