@@ -168,5 +168,36 @@ func (s *S3) Delete(itemsToDelete []string) bool {
 }
 
 func (s *S3) Get(destination string, items ...string) error {
+	client := s.getCredentials()
+	sess := session.Must(session.NewSession(&aws.Config{
+		Endpoint:    &s.Endpoint,
+		Region:      &s.Region,
+		Credentials: client,
+	}))
+
+	for _, item := range items {
+		err := func() error {
+			file, err := os.Create(fmt.Sprintf("%s/%s", destination, item))
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			downloader := s3manager.NewDownloader(sess)
+			_, err = downloader.Download(file, &s3.GetObjectInput{
+				Bucket: aws.String(s.Bucket),
+				Key:    aws.String(item),
+			})
+			if err != nil {
+				return err
+			}
+
+			return nil
+		}()
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
