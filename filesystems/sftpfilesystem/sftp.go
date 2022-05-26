@@ -2,7 +2,10 @@ package sftpfilesystem
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"os"
+	"path"
 
 	"github.com/petrostrak/sokudo/filesystems"
 	"github.com/pkg/sftp"
@@ -48,6 +51,28 @@ func (s *SFTP) getCredentials() (*sftp.Client, error) {
 }
 
 func (s *SFTP) Put(fileName, folder string) error {
+	client, err := s.getCredentials()
+	if err != nil {
+		return err
+	}
+	client.Close()
+
+	f, err := os.Open(fileName)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	f2, err := client.Create(path.Base(fileName))
+	if err != nil {
+		return err
+	}
+	defer f2.Close()
+
+	if _, err := io.Copy(f2, f); err != nil {
+		return err
+	}
+
 	return nil
 }
 
