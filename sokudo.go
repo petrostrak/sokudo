@@ -17,6 +17,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/petrostrak/sokudo/cache"
 	"github.com/petrostrak/sokudo/filesystems/miniofilesystem"
+	"github.com/petrostrak/sokudo/filesystems/sftpfilesystem"
 	"github.com/petrostrak/sokudo/mailer"
 	"github.com/petrostrak/sokudo/render"
 	"github.com/petrostrak/sokudo/session"
@@ -393,6 +394,17 @@ func (s *Sokudo) createFileSystems() map[string]interface{} {
 			Bucket:   os.Getenv("MINIO_BUCKET"),
 		}
 		fileSystems["MINIO"] = minio
+	}
+
+	if os.Getenv("SFTP_HOST") != "" {
+		sftp := sftpfilesystem.SFTP{
+			Host: os.Getenv("SFTP_HOST"),
+			User: os.Getenv("SFTP_USER"),
+			Pass: os.Getenv("SFTP_PASS"),
+			Port: os.Getenv("SFTP_PORT"),
+		}
+
+		fileSystems["SFTP"] = sftp
 	}
 
 	return fileSystems
