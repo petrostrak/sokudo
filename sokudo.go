@@ -17,6 +17,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/petrostrak/sokudo/cache"
 	"github.com/petrostrak/sokudo/filesystems/miniofilesystem"
+	"github.com/petrostrak/sokudo/filesystems/s3filesystem"
 	"github.com/petrostrak/sokudo/filesystems/sftpfilesystem"
 	"github.com/petrostrak/sokudo/filesystems/webdavfilesystem"
 	"github.com/petrostrak/sokudo/mailer"
@@ -379,6 +380,17 @@ func (s *Sokudo) BuildDSN() string {
 
 func (s *Sokudo) createFileSystems() map[string]interface{} {
 	fileSystems := make(map[string]interface{})
+
+	if os.Getenv("S3_KEY") != "" {
+		s3 := s3filesystem.S3{
+			Key:      os.Getenv("S3_KEY"),
+			Secret:   os.Getenv("S3_SECRET"),
+			Region:   os.Getenv("S3_REGION"),
+			Endpoint: os.Getenv("S3_ENDPOINT"),
+			Bucket:   os.Getenv("S3_BUCKET"),
+		}
+		fileSystems["S3"] = s3
+	}
 
 	if os.Getenv("MINIO_SECRET") != "" {
 		useSSL := false
