@@ -56,7 +56,7 @@ func (s *SFTP) Put(fileName, folder string) error {
 	if err != nil {
 		return err
 	}
-	client.Close()
+	defer client.Close()
 
 	f, err := os.Open(fileName)
 	if err != nil {
@@ -115,7 +115,7 @@ func (s *SFTP) Delete(itemsToDelete []string) bool {
 	if err != nil {
 		return false
 	}
-	client.Close()
+	defer client.Close()
 
 	for _, x := range itemsToDelete {
 		deleteErr := client.Remove(x)
@@ -132,7 +132,7 @@ func (s *SFTP) Get(destination string, items ...string) error {
 	if err != nil {
 		return err
 	}
-	client.Close()
+	defer client.Close()
 
 	for _, item := range items {
 		// create a destination file
