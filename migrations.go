@@ -31,15 +31,35 @@ func (s *Sokudo) CreatePopMigrations(up, down []byte, migrationName, migrationTy
 	return nil
 }
 
-func (s *Sokudo) RunPopMigrations(tx pop.Connection) error {
+func (s *Sokudo) RunPopMigrations(tx *pop.Connection) error {
 	var migrationPath = s.RootPath + "/migrations"
 
-	fm, err := pop.NewFileMigrator(migrationPath, &tx)
+	fm, err := pop.NewFileMigrator(migrationPath, tx)
 	if err != nil {
 		return err
 	}
 
 	if err = fm.Up(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Sokudo) PopMigrateDown(tx *pop.Connection, steps ...int) error {
+	var migrationPath = s.RootPath + "/migrations"
+
+	step := 1
+	if len(steps) > 0 {
+		step = steps[0]
+	}
+
+	fm, err := pop.NewFileMigrator(migrationPath, tx)
+	if err != nil {
+		return err
+	}
+
+	if err = fm.Down(step); err != nil {
 		return err
 	}
 
