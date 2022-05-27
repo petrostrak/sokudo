@@ -58,6 +58,10 @@ type Sokudo struct {
 	Mail          mailer.Mail
 	Server        Server
 	FileSystems   map[string]interface{}
+	S3            s3filesystem.S3
+	SFTP          sftpfilesystem.SFTP
+	WebDAV        webdavfilesystem.WebDAV
+	Minio         miniofilesystem.Minio
 }
 
 type Server struct {
@@ -390,6 +394,7 @@ func (s *Sokudo) createFileSystems() map[string]interface{} {
 			Bucket:   os.Getenv("S3_BUCKET"),
 		}
 		fileSystems["S3"] = s3
+		s.S3 = s3
 	}
 
 	if os.Getenv("MINIO_SECRET") != "" {
@@ -407,6 +412,7 @@ func (s *Sokudo) createFileSystems() map[string]interface{} {
 			Bucket:   os.Getenv("MINIO_BUCKET"),
 		}
 		fileSystems["MINIO"] = minio
+		s.Minio = minio
 	}
 
 	if os.Getenv("SFTP_HOST") != "" {
@@ -418,6 +424,7 @@ func (s *Sokudo) createFileSystems() map[string]interface{} {
 		}
 
 		fileSystems["SFTP"] = sftp
+		s.SFTP = sftp
 	}
 
 	if os.Getenv("WEBDAV_HOST") != "" {
@@ -428,6 +435,7 @@ func (s *Sokudo) createFileSystems() map[string]interface{} {
 		}
 
 		fileSystems["WEBDAV"] = webDAV
+		s.WebDAV = webDAV
 	}
 
 	return fileSystems
