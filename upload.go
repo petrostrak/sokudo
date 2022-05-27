@@ -33,6 +33,9 @@ func (s *Sokudo) UploadFile(r *http.Request, dst, field string, fs filesystems.F
 			return err
 		}
 	}
+	defer func() {
+		_ = os.Remove(fileName)
+	}()
 
 	return nil
 }

@@ -15,6 +15,7 @@ require (
 	github.com/bwmarrin/go-alone v0.0.0-20190806015146-742bb55d1631
 	github.com/dgraph-io/badger/v3 v3.2103.2
 	github.com/fatih/color v1.13.0
+	github.com/gabriel-vasile/mimetype v1.4.0
 	github.com/gertd/go-pluralize v0.2.1
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-git/go-git/v5 v5.4.2
@@ -49,7 +50,6 @@ require (
 	github.com/dgraph-io/ristretto v0.1.0 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.0 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.3.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
