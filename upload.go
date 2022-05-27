@@ -1,12 +1,14 @@
 package sokudo
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path"
 
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/petrostrak/sokudo/filesystems"
 )
 
@@ -47,6 +49,28 @@ func (s *Sokudo) getFileToUpload(r *http.Request, fieldName string) (string, err
 	}
 	defer file.Close()
 
+	mimeType, err := mimetype.DetectReader(file)
+	if err != nil {
+		return "", err
+	}
+
+	// go back to start of file
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		return "", err
+	}
+
+	validMimeTypes := []string{
+		"image/gif",
+		"image/jpeg",
+		"image/png",
+		"application/pdf",
+	}
+
+	if !inSlice(validMimeTypes, mimeType.String()) {
+		return "", errors.New("invalid file type uploaded")
+	}
+
 	dst, err := os.Create(fmt.Sprintf("./tmp/%s", header.Filename))
 	if err != nil {
 		return "", err
@@ -59,4 +83,14 @@ func (s *Sokudo) getFileToUpload(r *http.Request, fieldName string) (string, err
 	}
 
 	return fmt.Sprintf("./tmp/%s", header.Filename), nil
+}
+
+func inSlice(slice []string, value string) bool {
+	for _, item := range slice {
+		if item == value {
+			return true
+		}
+	}
+
+	return false
 }
