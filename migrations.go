@@ -12,7 +12,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func (s *Sokudo) popConnect() (*pop.Connection, error) {
+func (s *Sokudo) PopConnect() (*pop.Connection, error) {
 	tx, err := pop.Connect("development")
 	if err != nil {
 		return nil, err
