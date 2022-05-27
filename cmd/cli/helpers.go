@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -60,17 +61,17 @@ func getDSN() string {
 func showHelp() {
 	color.Yellow(`Available commands:
 
-	help                  - show the help commands
-	version               - print application version
-	migrate               - runs all up migrations that have not been run previously
-	migrate down          - reverses the most recent migration
-	migrate reset         - runs all down migrations in reverse order, and then all up migrations
-	make migration <name> - creates two new up and down migrations in the migrations folder
-	make auth             - creates and runs migrations for authentication tables, and creates models and middleware
-	make handler <name>   - creates a stub handler in the handlers directory
-	make model <name>     - creates a new model in the data directory
-	make session          - creates a table in the database as a session store
-	make mail <name>      - creates two starter mail templates in the mail directory
+	help                            - show the help commands
+	version                         - print application version
+	migrate                         - runs all up migrations that have not been run previously
+	migrate down                    - reverses the most recent migration
+	migrate reset                   - runs all down migrations in reverse order, and then all up migrations
+	make migration <name> <formant> - creates two new up and down migrations in the migrations folder; format=sql/fizz (default=fizz)
+	make auth                       - creates and runs migrations for authentication tables, and creates models and middleware
+	make handler <name>             - creates a stub handler in the handlers directory
+	make model <name>               - creates a new model in the data directory
+	make session                    - creates a table in the database as a session store
+	make mail <name>                - creates two starter mail templates in the mail directory
 	
 	`)
 }
@@ -117,5 +118,16 @@ func updateSource() {
 	err := filepath.Walk(".", updateSourceFiles)
 	if err != nil {
 		exitGracefully(err)
+	}
+}
+
+func checkForDB() {
+	dbType := skd.DB.DataType
+	if dbType == "" {
+		exitGracefully(errors.New("no database connection provided in .env"))
+	}
+
+	if !fileExists(skd.RootPath + "/config/database.yml") {
+		exitGracefully(errors.New("config/database.yml does not exist"))
 	}
 }
