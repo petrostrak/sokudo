@@ -38,7 +38,7 @@ func (s *Sokudo) UploadFile(r *http.Request, dst, field string, fs filesystems.F
 }
 
 func (s *Sokudo) getFileToUpload(r *http.Request, fieldName string) (string, error) {
-	err := r.ParseMultipartForm(10 << 22)
+	err := r.ParseMultipartForm(s.config.uploads.maxUploadSize)
 	if err != nil {
 		return "", err
 	}
@@ -60,14 +60,7 @@ func (s *Sokudo) getFileToUpload(r *http.Request, fieldName string) (string, err
 		return "", err
 	}
 
-	validMimeTypes := []string{
-		"image/gif",
-		"image/jpeg",
-		"image/png",
-		"application/pdf",
-	}
-
-	if !inSlice(validMimeTypes, mimeType.String()) {
+	if !inSlice(s.config.uploads.allowedMimeTypes, mimeType.String()) {
 		return "", errors.New("invalid file type uploaded")
 	}
 
