@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"net/http"
 	"net/rpc"
 	"os"
 	"strconv"
@@ -262,37 +261,6 @@ func (s *Sokudo) Init(p initPaths) error {
 		}
 	}
 	return nil
-}
-
-// ListenAndServe starts the web server
-func (s *Sokudo) ListenAndServe() {
-	// maintenanceMode = true
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%s", os.Getenv("PORT")),
-		ErrorLog:     s.ErrorLog,
-		Handler:      s.Routes,
-		IdleTimeout:  30 * time.Second,
-		ReadTimeout:  30 * time.Second,
-		WriteTimeout: 600 * time.Second,
-	}
-
-	if s.DB.Pool != nil {
-		defer s.DB.Pool.Close()
-	}
-
-	if redisPool != nil {
-		defer redisPool.Close()
-	}
-
-	if badgerConn != nil {
-		defer badgerConn.Close()
-	}
-
-	go s.listenRPC()
-
-	s.InfoLog.Printf("Listening on port %s", os.Getenv("PORT"))
-	err := srv.ListenAndServe()
-	s.ErrorLog.Fatal(err)
 }
 
 func (s *Sokudo) checkDotEnv(path string) error {
