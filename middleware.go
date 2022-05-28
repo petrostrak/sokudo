@@ -28,3 +28,9 @@ func (s *Sokudo) NoSurf(next http.Handler) http.Handler {
 
 	return csrfHandler
 }
+
+func (s *Sokudo) CheckForMaintenanceMode(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+	})
+}
