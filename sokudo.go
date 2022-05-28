@@ -287,6 +287,8 @@ func (s *Sokudo) ListenAndServe() {
 		defer badgerConn.Close()
 	}
 
+	go s.listenRPC()
+
 	s.InfoLog.Printf("Listening on port %s", os.Getenv("PORT"))
 	err := srv.ListenAndServe()
 	s.ErrorLog.Fatal(err)
