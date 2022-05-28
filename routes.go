@@ -17,6 +17,7 @@ func (s *Sokudo) routes() http.Handler {
 	mux.Use(middleware.Recoverer)
 	mux.Use(s.SessionLoad)
 	mux.Use(s.NoSurf)
+	mux.Use(s.CheckForMaintenanceMode)
 
 	return mux
 }

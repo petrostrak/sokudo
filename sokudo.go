@@ -266,6 +266,7 @@ func (s *Sokudo) Init(p initPaths) error {
 
 // ListenAndServe starts the web server
 func (s *Sokudo) ListenAndServe() {
+	// maintenanceMode = true
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%s", os.Getenv("PORT")),
 		ErrorLog:     s.ErrorLog,
