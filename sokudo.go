@@ -3,7 +3,9 @@ package sokudo
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
+	"net/rpc"
 	"os"
 	"strconv"
 	"strings"
@@ -478,4 +480,29 @@ func (r *RPCServer) MaintenanceMode(inMaintenanceMode bool, resp *string) error 
 	}
 
 	return nil
+}
+
+func (s *Sokudo) listenRPC() {
+	// if nothing specified for rpc port, dont start
+	if os.Getenv("RPC_PORT") != "" {
+		s.InfoLog.Println("Starting RPC server on port", os.Getenv("RPC_PORT"))
+		err := rpc.Register(new(RPCServer))
+		if err != nil {
+			s.ErrorLog.Println(err)
+		}
+
+		listen, err := net.Listen("tcp", "127.0.0.1:"+os.Getenv("RPC_PORT"))
+		if err != nil {
+			s.ErrorLog.Println(err)
+		}
+
+		for {
+			rpcConn, err := listen.Accept()
+			if err != nil {
+				continue
+			}
+
+			go rpc.ServeConn(rpcConn)
+		}
+	}
 }
