@@ -31,10 +31,11 @@ const (
 )
 
 var (
-	myRedisCache  *cache.RedisCache
-	myBadgerCache *cache.BadgerCache
-	redisPool     *redis.Pool
-	badgerConn    *badger.DB
+	myRedisCache    *cache.RedisCache
+	myBadgerCache   *cache.BadgerCache
+	redisPool       *redis.Pool
+	badgerConn      *badger.DB
+	maintenanceMode bool
 )
 
 // Celeritas is the overall type for the Celeritas package. Members that are exported in this type
@@ -463,4 +464,18 @@ func (s *Sokudo) createFileSystems() map[string]interface{} {
 	}
 
 	return fileSystems
+}
+
+type RPCServer struct{}
+
+func (r *RPCServer) MaintenanceMode(inMaintenanceMode bool, resp *string) error {
+	if inMaintenanceMode {
+		maintenanceMode = true
+		*resp = "Server in maintenance mode"
+	} else {
+		maintenanceMode = false
+		*resp = "Server live!"
+	}
+
+	return nil
 }
