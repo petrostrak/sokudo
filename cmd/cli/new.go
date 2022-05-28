@@ -30,7 +30,7 @@ func doNew(appName string) {
 	// git clone the skeleton application
 	color.Yellow("\tCloning repository...")
 	_, err := git.PlainClone("./"+appName, false, &git.CloneOptions{
-		URL:      "https://github.com/petrostrak/sokudo-app.git",
+		URL:      "https://github.com/petrostrak/sokudo-myapp.git",
 		Progress: os.Stdout,
 		Depth:    1,
 	})
